@@ -102,6 +102,9 @@ int ProcessNumber(char* currentchar){
 	while(isdigit(*currentchar)){
 		size++;
 		lexema = (char *) realloc(lexema,size*sizeof(char));
+		if(lexema == NULL){
+			exit (1);
+		}
 		lexema[size-1] = *currentchar;
 		*currentchar = fgetc(fptr);
 	}
@@ -123,6 +126,9 @@ int ProcessWord(char* currentchar){
 	while(isalpha(*currentchar) || isdigit(*currentchar) || *currentchar == '_'){
 		size ++;
 		lexema = (char *) realloc(lexema,size);
+		if(lexema == NULL){
+			exit (1);
+		}
 		lexema[size-1] = *currentchar;
 		*currentchar = fgetc(fptr);
 	}
@@ -134,24 +140,16 @@ int ProcessWord(char* currentchar){
 	return 0;
 }
 int main(){
-	AppendToken("oi","soi");
-	AppendToken("tchau","stchau");
-	PrintTokenList(THead);
-	AppendToken("test","stest");
-
-	PrintTokenList(THead);
-
-	
 	if((fptr = fopen("./gera1.txt","r")) == NULL){
 		printf("Deu ruim!!!");
 		exit(1);
 	}
 	char currentchar;
 	currentchar = fgetc(fptr);
-	//Enquanto nÃ£o terminar o arquivo fonte
+	//Enquanto nao terminar o arquivo fonte
 	while(currentchar != EOF){
 		while((currentchar == '{' || isspace(currentchar)) && currentchar != EOF){
-			//Se o caracter lido for { significa que Ã© comeÃ§o de comentÃ¡rio, entÃ£o ignora atÃ© terminar o comentÃ¡rio
+			//Se o caracter lido for { significa que eh comeco de comentario, entao ignora ate terminar o comentario
 			if(currentchar == '{'){
 				while(currentchar != '}' && currentchar != EOF){
 					
@@ -159,7 +157,7 @@ int main(){
 				}
 				currentchar = fgetc(fptr);
 			}
-			//quando tiver espaÃ§os, ignorar eles
+			//quando tiver espacos, ignorar eles
 			while(isspace(currentchar) && currentchar != EOF){
 				currentchar = fgetc(fptr);
 			}
