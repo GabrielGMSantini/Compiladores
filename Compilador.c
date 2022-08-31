@@ -1,175 +1,218 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
-//Estrutura que representa um no de uma lista ligada de Tokens
+
+// Estrutura que representa um no de uma lista ligada de Tokens
 typedef struct tokennode {
- char* lexema;
- char* simbolo;
- struct tokennode* next;
+  char *lexema;
+  char *simbolo;
+  struct tokennode *next;
 } tokennode;
-tokennode* THead = NULL;
+tokennode *THead = NULL;
 FILE *fptr;
 
-//Da append nos lexema e simbolo que foi reconhecido para a lista de tokens
-int AppendToken(char* lexema, char* simbolo){
-	tokennode* TStart = THead;
-	if(THead == NULL){
-		THead = malloc(sizeof(tokennode));
-		THead->lexema = malloc(strlen(lexema));
-		THead->simbolo = malloc(strlen(simbolo));
-		strcpy(THead->lexema,lexema);
-		strcpy(THead->simbolo,simbolo);
-		THead->next = NULL;
-		return 1;
-	}
-	while (THead->next != NULL){
-		THead = THead->next;
-	}
-	tokennode* TNew = malloc(sizeof(tokennode));
-	TNew->lexema = malloc(strlen(lexema));
-	TNew->simbolo = malloc(strlen(simbolo));
-	strcpy(TNew->lexema,lexema);
-	strcpy(TNew->simbolo,simbolo);
-	TNew->next = NULL;
-	THead->next = TNew;
-	THead = TStart;
-	return 1;
-}
-//Printa a lista de tokens
-void PrintTokenList(tokennode* THeader){
-	while(THeader != NULL){
-		puts(THeader->lexema);
-		puts(THeader->simbolo);
-		printf("\n");
-		THeader = THeader->next;
-	}
-}
-//Segrega o lexema atual, redirecionando para a funcao que gerara o token
-int GetToken(char* currentchar){
-	printf("%c ",*currentchar);
-	//Se for digito	
-	if(isdigit(*currentchar)){
-		printf("EH DIGITO 0/\n");
-		ProcessNumber(currentchar);
-	}
-	else{
-		//Se for letra
-		if(isalpha(*currentchar)){
-			printf("EH LETRA \\0\n");
-			ProcessWord(currentchar);
-		}
-		else{
-			//Se for atribuicao
-			if(*currentchar == ':'){
-				printf("EH ATRIBUICAO!!!! (^_^)\n");	
-			}
-			else{
-				//Se for operador aritmetico
-				if(*currentchar == '+' || *currentchar == '-' || *currentchar == '*'){
-					printf("EH OPERADOR ARITMETICO <+u+>\n");
-				}
-				else{
-					//Se for operador relacional
-					if(*currentchar == '!' || *currentchar == '<' || *currentchar == '>' || *currentchar == '='){
-						printf("EH OPERADOR RELACIONAL!!!! (UwU)\n");
-					}
-					else{
-						//Se for pontuacao
-						if(*currentchar == ';' || *currentchar == ',' || *currentchar == '(' || *currentchar == ')' || *currentchar == '.'){
-							printf("EH PONTUACAO!!!!!!!!!!!! [OwO]\n");
-						}
-						//Se nao for nada disso, deu erro
-						else{
-							printf("CORRE NEGADAAAAA!!!!!!!!\n");
-							exit(1);
-						}
-					}
-				}
-			}
-		}
-	}
-	
-	*currentchar = fgetc(fptr);
-}
-//Processa a detecao de um digito
-int ProcessNumber(char* currentchar){
-	char* lexema;
-	lexema = malloc(sizeof(char));
-	int size = 1;
-	lexema[0] = *currentchar;
-	*currentchar = fgetc(fptr);
-	while(isdigit(*currentchar)){
-		size++;
-		lexema = (char *) realloc(lexema,size*sizeof(char));
-		if(lexema == NULL){
-			exit (1);
-		}
-		lexema[size-1] = *currentchar;
-		*currentchar = fgetc(fptr);
-	}
-	lexema = realloc(lexema,(size+1)*sizeof(char));
-	lexema[size] = '\0';
-	AppendToken(lexema,"snumero");
-	free(lexema);
-	return 0;
+// Da append nos lexema e simbolo que foi reconhecido para a lista de tokens
+int AppendToken(char *lexema, char *simbolo) {
+  tokennode *TStart = THead;
+  if (THead == NULL) {
+    THead = malloc(sizeof(tokennode));
+    THead->lexema = malloc(strlen(lexema));
+    THead->simbolo = malloc(strlen(simbolo));
+    strcpy(THead->lexema, lexema);
+    strcpy(THead->simbolo, simbolo);
+    THead->next = NULL;
+    return 1;
+  }
+  while (THead->next != NULL) {
+    THead = THead->next;
+  }
+  tokennode *TNew = malloc(sizeof(tokennode));
+  TNew->lexema = malloc(strlen(lexema));
+  TNew->simbolo = malloc(strlen(simbolo));
+  strcpy(TNew->lexema, lexema);
+  strcpy(TNew->simbolo, simbolo);
+  TNew->next = NULL;
+  THead->next = TNew;
+  THead = TStart;
+  return 1;
 }
 
-//Processa identificador ou palavra reservada
-int ProcessWord(char* currentchar){
-	char* lexema;
-	lexema = malloc(sizeof(char));
-	int size = 1;
-	lexema[0] = *currentchar;
-	*currentchar = fgetc(fptr);
-
-	while(isalpha(*currentchar) || isdigit(*currentchar) || *currentchar == '_'){
-		size ++;
-		lexema = (char *) realloc(lexema,size);
-		if(lexema == NULL){
-			exit (1);
-		}
-		lexema[size-1] = *currentchar;
-		*currentchar = fgetc(fptr);
-	}
-	lexema = realloc(lexema,size+1);
-	lexema[size] = '\0';
-	puts(lexema);
-	AppendToken(lexema,"spalavra");
-	free(lexema);
-	return 0;
+// Printa a lista de tokens
+void PrintTokenList(tokennode *THeader) {
+  while (THeader != NULL) {
+    puts(THeader->lexema);
+    puts(THeader->simbolo);
+    printf("\n");
+    THeader = THeader->next;
+  }
 }
-int main(){
-	if((fptr = fopen("./gera1.txt","r")) == NULL){
-		printf("Deu ruim!!!");
-		exit(1);
-	}
-	char currentchar;
-	currentchar = fgetc(fptr);
-	//Enquanto nao terminar o arquivo fonte
-	while(currentchar != EOF){
-		while((currentchar == '{' || isspace(currentchar)) && currentchar != EOF){
-			//Se o caracter lido for { significa que eh comeco de comentario, entao ignora ate terminar o comentario
-			if(currentchar == '{'){
-				while(currentchar != '}' && currentchar != EOF){
-					
-					currentchar = fgetc(fptr);
-				}
-				currentchar = fgetc(fptr);
-			}
-			//quando tiver espacos, ignorar eles
-			while(isspace(currentchar) && currentchar != EOF){
-				currentchar = fgetc(fptr);
-			}
-			
-		}
-		if(currentchar != EOF){
-			//Gera token a partir da palavra atual
-			GetToken(&currentchar);
-		}
-		
-	}
-	PrintTokenList(THead);
-	fclose(fptr);
-	return 1;
+
+// Processa a detecao de um digito
+int ProcessNumber(char *currentchar) {
+  char *lexema;
+  lexema = malloc(sizeof(char));
+  int size = 1;
+  lexema[0] = *currentchar;
+  *currentchar = fgetc(fptr);
+  while (isdigit(*currentchar)) {
+    size++;
+    lexema = (char *)realloc(lexema, size * sizeof(char));
+    if (lexema == NULL) {
+      exit(1);
+    }
+    lexema[size - 1] = *currentchar;
+    *currentchar = fgetc(fptr);
+  }
+  lexema = realloc(lexema, (size + 1) * sizeof(char));
+  lexema[size] = '\0';
+  AppendToken(lexema, "snumero");
+  free(lexema);
+  return 0;
+}
+
+// Processa identificador ou palavra reservada
+int ProcessWord(char *currentchar) {
+  char *lexema;
+  char *simbolo;
+  lexema = malloc(sizeof(char));
+  int size = 1;
+  lexema[0] = *currentchar;
+  *currentchar = fgetc(fptr);
+
+  while (isalpha(*currentchar) || isdigit(*currentchar) ||
+         *currentchar == '_') {
+    size++;
+    lexema = (char *)realloc(lexema, size);
+    lexema[size - 1] = *currentchar;
+    *currentchar = fgetc(fptr);
+  }
+  lexema = realloc(lexema, size + 1);
+  lexema[size] = '\0';
+  puts(lexema);
+  // Dependendo do lexema, identifica uma das possíveis palavras reservadas
+  if (!strcmp(lexema, "programa") || !strcmp(lexema, "se") ||
+      !strcmp(lexema, "entao") || !strcmp(lexema, "senao") ||
+      !strcmp(lexema, "enquanto") || !strcmp(lexema, "faca") ||
+      !strcmp(lexema, "inicio") || !strcmp(lexema, "fim") ||
+      !strcmp(lexema, "escreva") || !strcmp(lexema, "leia") ||
+      !strcmp(lexema, "var") || !strcmp(lexema, "inteiro") ||
+      !strcmp(lexema, "booleano") || !strcmp(lexema, "verdadeiro") ||
+      !strcmp(lexema, "falso") || !strcmp(lexema, "procedimento") ||
+      !strcmp(lexema, "funcao") || !strcmp(lexema, "div") ||
+      !strcmp(lexema, "e") || !strcmp(lexema, "nao")) {
+    simbolo = malloc(sizeof(lexema) + 6);
+    simbolo[0] = 's';
+    strcat(simbolo, lexema);
+    AppendToken(lexema, simbolo);
+  }
+  // Caso não seja nenhuma das palavras reservadas, é um identificador
+  else {
+    AppendToken(lexema, "sidentificador");
+  }
+  free(lexema);
+  return 0;
+}
+
+// Processa uma atribuicao
+int ProcessAttribution(char *currentchar) {
+  char *lexema;
+  lexema = malloc(sizeof(char));
+  lexema[0] = *currentchar;
+  *currentchar = fgetc(fptr);
+  // Caso possua um "=" após ":", eh uma atribuicao
+  if (*currentchar == '=') {
+    lexema[1] = *currentchar;
+    *currentchar = fgetc(fptr);
+    AppendToken(lexema, "satribuicao");
+    free(lexema);
+  }
+  // Senao, eh dois pontos
+  else {
+    AppendToken(lexema, "sdoispontos");
+    free(lexema);
+  }
+  return 0;
+}
+
+// Segrega o lexema atual, redirecionando para a funcao que gerara o token
+int GetToken(char *currentchar) {
+  printf("%c ", *currentchar);
+  // Se for digito
+  if (isdigit(*currentchar)) {
+    printf("EH DIGITO 0/\n");
+    ProcessNumber(currentchar);
+  } else {
+    // Se for letra
+    if (isalpha(*currentchar)) {
+      printf("EH LETRA \\0\n");
+      ProcessWord(currentchar);
+    } else {
+      // Se for atribuicao
+      if (*currentchar == ':') {
+        printf("EH ATRIBUICAO!!!! (^_^)\n");
+        ProcessAttribution(currentchar);
+      } else {
+        // Se for operador aritmetico
+        if (*currentchar == '+' || *currentchar == '-' || *currentchar == '*') {
+          printf("EH OPERADOR ARITMETICO <+u+>\n");
+          *currentchar = fgetc(fptr);
+        } else {
+          // Se for operador relacional
+          if (*currentchar == '!' || *currentchar == '<' ||
+              *currentchar == '>' || *currentchar == '=') {
+            printf("EH OPERADOR RELACIONAL!!!! (UwU)\n");
+            *currentchar = fgetc(fptr);
+          } else {
+            // Se for pontuacao
+            if (*currentchar == ';' || *currentchar == ',' ||
+                *currentchar == '(' || *currentchar == ')' ||
+                *currentchar == '.') {
+              printf("EH PONTUACAO!!!!!!!!!!!! [OwO]\n");
+              *currentchar = fgetc(fptr);
+            }
+            // Se nao for nada disso, deu erro
+            else {
+              printf("CORRE NEGADAAAAA!!!!!!!!\n");
+              exit(1);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+int main() {
+  if ((fptr = fopen("./gera1.txt", "r")) == NULL) {
+    printf("Deu ruim!!!");
+    exit(1);
+  }
+  char currentchar;
+  currentchar = fgetc(fptr);
+  // Enquanto nao terminar o arquivo fonte
+  while (currentchar != EOF) {
+    while ((currentchar == '{' || isspace(currentchar)) && currentchar != EOF) {
+      // Se o caracter lido for { significa que eh comeco de comentario, entao
+      // ignora ate terminar o comentario
+      if (currentchar == '{') {
+        while (currentchar != '}' && currentchar != EOF) {
+
+          currentchar = fgetc(fptr);
+        }
+        currentchar = fgetc(fptr);
+      }
+      // quando tiver espacos, ignorar eles
+      while (isspace(currentchar) && currentchar != EOF) {
+        currentchar = fgetc(fptr);
+      }
+    }
+    if (currentchar != EOF) {
+      // Gera token a partir da palavra atual
+      GetToken(&currentchar);
+    }
+  }
+  PrintTokenList(THead);
+  fclose(fptr);
+  return 1;
 }
