@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-//Estrutura que representa um nó de uma lista ligada de Tokens
+//Estrutura que representa um no de uma lista ligada de Tokens
 typedef struct tokennode {
  char* lexema;
  char* simbolo;
@@ -11,8 +11,9 @@ typedef struct tokennode {
 tokennode* THead = NULL;
 FILE *fptr;
 
-//Dá append nos lexema e simbolo que foi reconhecido para a lista de tokens
-int appendtoken(tokennode** TL,char* lexema, char* simbolo){
+//Da append nos lexema e simbolo que foi reconhecido para a lista de tokens
+int AppendToken(char* lexema, char* simbolo){
+	tokennode* TStart = THead;
 	if(THead == NULL){
 		THead = malloc(sizeof(tokennode));
 		THead->lexema = malloc(strlen(lexema));
@@ -23,7 +24,7 @@ int appendtoken(tokennode** TL,char* lexema, char* simbolo){
 		return 1;
 	}
 	while (THead->next != NULL){
-		THead = (*TL)->next;
+		THead = THead->next;
 	}
 	tokennode* TNew = malloc(sizeof(tokennode));
 	TNew->lexema = malloc(strlen(lexema));
@@ -32,6 +33,7 @@ int appendtoken(tokennode** TL,char* lexema, char* simbolo){
 	strcpy(TNew->simbolo,simbolo);
 	TNew->next = NULL;
 	THead->next = TNew;
+	THead = TStart;
 	return 1;
 }
 //Printa a lista de tokens
@@ -43,24 +45,27 @@ void PrintTokenList(tokennode* THeader){
 		THeader = THeader->next;
 	}
 }
-
+//Segrega o lexema atual, redirecionando para a funcao que gerara o token
 int GetToken(char* currentchar){
-	//se for digito	
+	printf("%c ",*currentchar);
+	//Se for digito	
 	if(isdigit(*currentchar)){
-		printf("DIGITO 0/\n");
+		printf("EH DIGITO 0/\n");
+		ProcessNumber(currentchar);
 	}
 	else{
-		//se for letra
+		//Se for letra
 		if(isalpha(*currentchar)){
-			printf("LETRA \0\n");
+			printf("EH LETRA \\0\n");
+			ProcessWord(currentchar);
 		}
 		else{
-			//Se for atribuição
+			//Se for atribuicao
 			if(*currentchar == ':'){
 				printf("EH ATRIBUICAO!!!! (^_^)\n");	
 			}
 			else{
-				//Se for operador aritmético
+				//Se for operador aritmetico
 				if(*currentchar == '+' || *currentchar == '-' || *currentchar == '*'){
 					printf("EH OPERADOR ARITMETICO <+u+>\n");
 				}
@@ -70,11 +75,11 @@ int GetToken(char* currentchar){
 						printf("EH OPERADOR RELACIONAL!!!! (UwU)\n");
 					}
 					else{
-						//Se for pontuação
+						//Se for pontuacao
 						if(*currentchar == ';' || *currentchar == ',' || *currentchar == '(' || *currentchar == ')' || *currentchar == '.'){
 							printf("EH PONTUACAO!!!!!!!!!!!! [OwO]\n");
 						}
-						//Se não for nada disso, deu erro
+						//Se nao for nada disso, deu erro
 						else{
 							printf("CORRE NEGADAAAAA!!!!!!!!\n");
 							exit(1);
@@ -85,15 +90,57 @@ int GetToken(char* currentchar){
 		}
 	}
 	
-	
-	printf("%c",*currentchar);
 	*currentchar = fgetc(fptr);
 }
+//Processa a detecao de um digito
+int ProcessNumber(char* currentchar){
+	char* lexema;
+	lexema = malloc(sizeof(char));
+	int size = 1;
+	lexema[0] = *currentchar;
+	*currentchar = fgetc(fptr);
+	while(isdigit(*currentchar)){
+		size++;
+		lexema = (char *) realloc(lexema,size*sizeof(char));
+		lexema[size-1] = *currentchar;
+		*currentchar = fgetc(fptr);
+	}
+	lexema = realloc(lexema,(size+1)*sizeof(char));
+	lexema[size] = '\0';
+	AppendToken(lexema,"snumero");
+	free(lexema);
+	return 0;
+}
 
+//Processa identificador ou palavra reservada
+int ProcessWord(char* currentchar){
+	char* lexema;
+	lexema = malloc(sizeof(char));
+	int size = 1;
+	lexema[0] = *currentchar;
+	*currentchar = fgetc(fptr);
+
+	while(isalpha(*currentchar) || isdigit(*currentchar) || *currentchar == '_'){
+		size ++;
+		lexema = (char *) realloc(lexema,size);
+		lexema[size-1] = *currentchar;
+		*currentchar = fgetc(fptr);
+	}
+	lexema = realloc(lexema,size+1);
+	lexema[size] = '\0';
+	puts(lexema);
+	AppendToken(lexema,"spalavra");
+	free(lexema);
+	return 0;
+}
 int main(){
-	appendtoken(&THead,"oi","soi");
-	appendtoken(&THead,"tchau","stchau");
+	AppendToken("oi","soi");
+	AppendToken("tchau","stchau");
 	PrintTokenList(THead);
+	AppendToken("test","stest");
+
+	PrintTokenList(THead);
+
 	
 	if((fptr = fopen("./gera1.txt","r")) == NULL){
 		printf("Deu ruim!!!");
@@ -101,10 +148,10 @@ int main(){
 	}
 	char currentchar;
 	currentchar = fgetc(fptr);
-	//Enquanto não terminar o arquivo fonte
+	//Enquanto nÃ£o terminar o arquivo fonte
 	while(currentchar != EOF){
 		while((currentchar == '{' || isspace(currentchar)) && currentchar != EOF){
-			//Se o caracter lido for { significa que é começo de comentário, então ignora até terminar o comentário
+			//Se o caracter lido for { significa que Ã© comeÃ§o de comentÃ¡rio, entÃ£o ignora atÃ© terminar o comentÃ¡rio
 			if(currentchar == '{'){
 				while(currentchar != '}' && currentchar != EOF){
 					
@@ -112,7 +159,7 @@ int main(){
 				}
 				currentchar = fgetc(fptr);
 			}
-			//quando tiver espaços, ignorar eles
+			//quando tiver espaÃ§os, ignorar eles
 			while(isspace(currentchar) && currentchar != EOF){
 				currentchar = fgetc(fptr);
 			}
@@ -124,6 +171,7 @@ int main(){
 		}
 		
 	}
+	PrintTokenList(THead);
 	fclose(fptr);
 	return 1;
 }
