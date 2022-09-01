@@ -43,10 +43,18 @@ int AppendToken(char *lexema, char *simbolo) {
 
 // Printa a lista de tokens
 int PrintTokenList(tokennode *THeader) {
+  int index = 1;
+  printf("\n\nLISTA DE TOKENS: \n");
+  printf("__________________\n\n");
   while (THeader != NULL) {
+    printf("Token %d\n\n", index);
+    printf("Lexema:   ");
     puts(THeader->lexema);
+    printf("Simbolo:  ");
     puts(THeader->simbolo);
     printf("\n");
+    printf("__________________\n\n");
+    index++;
     THeader = THeader->next;
   }
   return 0;
@@ -55,7 +63,7 @@ int PrintTokenList(tokennode *THeader) {
 // Processa a detecao de um digito
 int ProcessNumber(char *currentchar) {
   int size = 1;
-  lexvetglobal[size-1] = *currentchar;
+  lexvetglobal[size - 1] = *currentchar;
   *currentchar = fgetc(fptr);
   while (isdigit(*currentchar)) {
     size++;
@@ -71,7 +79,7 @@ int ProcessNumber(char *currentchar) {
 int ProcessWord(char *currentchar) {
   char simbolo[20];
   int size = 1;
-  lexvetglobal[size-1] = *currentchar;
+  lexvetglobal[size - 1] = *currentchar;
   *currentchar = fgetc(fptr);
 
   while (isalpha(*currentchar) || isdigit(*currentchar) ||
@@ -89,10 +97,12 @@ int ProcessWord(char *currentchar) {
       !strcmp(lexvetglobal, "inicio") || !strcmp(lexvetglobal, "fim") ||
       !strcmp(lexvetglobal, "escreva") || !strcmp(lexvetglobal, "leia") ||
       !strcmp(lexvetglobal, "var") || !strcmp(lexvetglobal, "inteiro") ||
-      !strcmp(lexvetglobal, "booleano") || !strcmp(lexvetglobal, "verdadeiro") ||
-      !strcmp(lexvetglobal, "falso") || !strcmp(lexvetglobal, "procedimento") ||
+      !strcmp(lexvetglobal, "booleano") ||
+      !strcmp(lexvetglobal, "verdadeiro") || !strcmp(lexvetglobal, "falso") ||
+      !strcmp(lexvetglobal, "procedimento") ||
       !strcmp(lexvetglobal, "funcao") || !strcmp(lexvetglobal, "div") ||
-      !strcmp(lexvetglobal, "e") || !strcmp(lexvetglobal, "ou") || !strcmp(lexvetglobal, "nao")) {
+      !strcmp(lexvetglobal, "e") || !strcmp(lexvetglobal, "ou") ||
+      !strcmp(lexvetglobal, "nao")) {
     simbolo[0] = 's';
     simbolo[1] = '\0';
     strcat(simbolo, lexvetglobal);
@@ -118,121 +128,125 @@ int ProcessAttribution(char *currentchar) {
   }
   // Senao, eh dois pontos
   else {
-  	lexvetglobal[1] = '\0';
+    lexvetglobal[1] = '\0';
     AppendToken(lexvetglobal, "sdoispontos");
   }
   return 0;
 }
 // Processa um operador aritmetico
 int ProcessArithmeticOperator(char *currentchar) {
-	lexvetglobal[0] = *currentchar;
-	lexvetglobal[1] = '\0';
-	*currentchar = fgetc(fptr);
-	//separa os simbolos e gera os tokens
-	switch(lexvetglobal[0]){
-		case '+':
-			AppendToken(lexvetglobal,"smais");
-			return 0;
-			break;
-		case '-':
-			AppendToken(lexvetglobal,"smenos");
-			return 0;
-			break;
-		case '*':
-			AppendToken(lexvetglobal,"smult");
-			return 0;
-			break;
-		default:
-			return 1;
-	}
+  lexvetglobal[0] = *currentchar;
+  lexvetglobal[1] = '\0';
+  *currentchar = fgetc(fptr);
+  // separa os simbolos e gera os tokens
+  switch (lexvetglobal[0]) {
+  case '+':
+    AppendToken(lexvetglobal, "smais");
+    return 0;
+    break;
+  case '-':
+    AppendToken(lexvetglobal, "smenos");
+    return 0;
+    break;
+  case '*':
+    AppendToken(lexvetglobal, "smult");
+    return 0;
+    break;
+  default:
+    return 1;
+  }
 }
 
-//Processa operador relacional
-int ProcessRelationalOperator(char* currentchar){
-	lexvetglobal[0] = *currentchar;
-	switch (lexvetglobal[0]){
-		case '=':
-			lexvetglobal[1] = '\0';
-			AppendToken(lexvetglobal,"sig");
-			*currentchar = fgetc(fptr);
-			return 0;
-			break;
-		case '!':
-			*currentchar = fgetc(fptr);
-			lexvetglobal[1] = *currentchar;
-			*currentchar = fgetc(fptr);
-			lexvetglobal[2] = '\0';
-			AppendToken(lexvetglobal,"sdif");
-			return 0;
-			break;
-		case '<':
-			*currentchar = fgetc(fptr);
-			if(*currentchar == '='){
-				lexvetglobal[1] = *currentchar;
-				lexvetglobal[2] = '\0';
-				*currentchar = fgetc(fptr);
-				AppendToken(lexvetglobal,"smenorig");
-				return 0;
-			}
-			else{
-				lexvetglobal[1] = '\0';
-				AppendToken(lexvetglobal,"smenor");
-				return 0;
-			}
-			break;
-		case '>':
-			*currentchar = fgetc(fptr);
-			if(*currentchar == '='){
-				lexvetglobal[1] = *currentchar;
-				lexvetglobal[2] = '\0';
-				*currentchar = fgetc(fptr);
-				AppendToken(lexvetglobal,"smaiorig");
-				return 0;
-			}
-			else{
-				lexvetglobal[1] = '\0';
-				AppendToken(lexvetglobal,"smaior");
-				return 0;
-			}
-			break;
-			
-		default:
-			return 1;		
-	}
-	return 1;
+// Processa operador relacional
+int ProcessRelationalOperator(char *currentchar) {
+  lexvetglobal[0] = *currentchar;
+  switch (lexvetglobal[0]) {
+  case '=':
+    lexvetglobal[1] = '\0';
+    AppendToken(lexvetglobal, "sig");
+    *currentchar = fgetc(fptr);
+    return 0;
+    break;
+  case '!':
+    *currentchar = fgetc(fptr);
+    if (*currentchar == '=') {
+      lexvetglobal[1] = *currentchar;
+      *currentchar = fgetc(fptr);
+      lexvetglobal[2] = '\0';
+      AppendToken(lexvetglobal, "sdif");
+      return 0;
+      break;
+    }
+    else {
+      printf("ERRO, falta de \"=\" apos \"!\"\n");
+      exit(1);
+    }
+  case '<':
+    *currentchar = fgetc(fptr);
+    if (*currentchar == '=') {
+      lexvetglobal[1] = *currentchar;
+      lexvetglobal[2] = '\0';
+      *currentchar = fgetc(fptr);
+      AppendToken(lexvetglobal, "smenorig");
+      return 0;
+    } else {
+      lexvetglobal[1] = '\0';
+      AppendToken(lexvetglobal, "smenor");
+      return 0;
+    }
+    break;
+  case '>':
+    *currentchar = fgetc(fptr);
+    if (*currentchar == '=') {
+      lexvetglobal[1] = *currentchar;
+      lexvetglobal[2] = '\0';
+      *currentchar = fgetc(fptr);
+      AppendToken(lexvetglobal, "smaiorig");
+      return 0;
+    } else {
+      lexvetglobal[1] = '\0';
+      AppendToken(lexvetglobal, "smaior");
+      return 0;
+    }
+    break;
+
+  default:
+    return 1;
+  }
+  return 1;
 }
 
-//Processa pontuacao
-int ProcessPunctuation(char* currentchar){
-	lexvetglobal[0] = *currentchar;
-	lexvetglobal[1] = '\0';
-	*currentchar = fgetc(fptr);
-	//separa os simbolos e gera os tokens
-	switch(lexvetglobal[0]){
-		case '.':
-			AppendToken(lexvetglobal,"sponto");
-			return 0;
-			break;
-		case ';':
-			AppendToken(lexvetglobal,"sponto_virgula");
-			return 0;
-			break;
-		case ',':
-			AppendToken(lexvetglobal,"svirgula");
-			return 0;
-			break;
-		case '(':
-			AppendToken(lexvetglobal,"sabre_parenteses");
-			return 0;
-			break;
-		case ')':
-			AppendToken(lexvetglobal,"sfecha_parenteses");
-			return 0;
-			break;
-		
-		default:
-			return 1;
-	}
+// Processa pontuacao
+int ProcessPunctuation(char *currentchar) {
+  lexvetglobal[0] = *currentchar;
+  lexvetglobal[1] = '\0';
+  *currentchar = fgetc(fptr);
+  // separa os simbolos e gera os tokens
+  switch (lexvetglobal[0]) {
+  case '.':
+    AppendToken(lexvetglobal, "sponto");
+    return 0;
+    break;
+  case ';':
+    AppendToken(lexvetglobal, "sponto_virgula");
+    return 0;
+    break;
+  case ',':
+    AppendToken(lexvetglobal, "svirgula");
+    return 0;
+    break;
+  case '(':
+    AppendToken(lexvetglobal, "sabre_parenteses");
+    return 0;
+    break;
+  case ')':
+    AppendToken(lexvetglobal, "sfecha_parenteses");
+    return 0;
+    break;
+
+  default:
+    return 1;
+  }
 }
 // Segrega o lexema atual, redirecionando para a funcao que gerara o token
 int GetToken(char *currentchar) {
