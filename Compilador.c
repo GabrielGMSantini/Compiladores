@@ -9,9 +9,12 @@ typedef struct tokennode {
   char *simbolo;
   struct tokennode *next;
 } tokennode;
+
 tokennode *THead = NULL;
+
 FILE *fptr;
 
+char lexvetglobal[31];
 // Da append nos lexema e simbolo que foi reconhecido para a lista de tokens
 int AppendToken(char *lexema, char *simbolo) {
   tokennode *TStart = THead;
@@ -22,7 +25,7 @@ int AppendToken(char *lexema, char *simbolo) {
     strcpy(THead->lexema, lexema);
     strcpy(THead->simbolo, simbolo);
     THead->next = NULL;
-    return 1;
+    return 0;
   }
   while (THead->next != NULL) {
     THead = THead->next;
@@ -35,106 +38,202 @@ int AppendToken(char *lexema, char *simbolo) {
   TNew->next = NULL;
   THead->next = TNew;
   THead = TStart;
-  return 1;
+  return 0;
 }
 
 // Printa a lista de tokens
-void PrintTokenList(tokennode *THeader) {
+int PrintTokenList(tokennode *THeader) {
   while (THeader != NULL) {
     puts(THeader->lexema);
     puts(THeader->simbolo);
     printf("\n");
     THeader = THeader->next;
   }
+  return 0;
 }
 
 // Processa a detecao de um digito
 int ProcessNumber(char *currentchar) {
-  char *lexema;
-  lexema = malloc(sizeof(char));
   int size = 1;
-  lexema[0] = *currentchar;
+  lexvetglobal[size-1] = *currentchar;
   *currentchar = fgetc(fptr);
   while (isdigit(*currentchar)) {
     size++;
-    lexema = (char *)realloc(lexema, size * sizeof(char));
-    if (lexema == NULL) {
-      exit(1);
-    }
-    lexema[size - 1] = *currentchar;
+    lexvetglobal[size - 1] = *currentchar;
     *currentchar = fgetc(fptr);
   }
-  lexema = realloc(lexema, (size + 1) * sizeof(char));
-  lexema[size] = '\0';
-  AppendToken(lexema, "snumero");
-  free(lexema);
+  lexvetglobal[size] = '\0';
+  AppendToken(lexvetglobal, "snumero");
   return 0;
 }
 
 // Processa identificador ou palavra reservada
 int ProcessWord(char *currentchar) {
-  char *lexema;
-  char *simbolo;
-  lexema = malloc(sizeof(char));
+  char simbolo[20];
   int size = 1;
-  lexema[0] = *currentchar;
+  lexvetglobal[size-1] = *currentchar;
   *currentchar = fgetc(fptr);
 
   while (isalpha(*currentchar) || isdigit(*currentchar) ||
          *currentchar == '_') {
     size++;
-    lexema = (char *)realloc(lexema, size);
-    lexema[size - 1] = *currentchar;
+    lexvetglobal[size - 1] = *currentchar;
     *currentchar = fgetc(fptr);
   }
-  lexema = realloc(lexema, size + 1);
-  lexema[size] = '\0';
-  puts(lexema);
-  // Dependendo do lexema, identifica uma das possíveis palavras reservadas
-  if (!strcmp(lexema, "programa") || !strcmp(lexema, "se") ||
-      !strcmp(lexema, "entao") || !strcmp(lexema, "senao") ||
-      !strcmp(lexema, "enquanto") || !strcmp(lexema, "faca") ||
-      !strcmp(lexema, "inicio") || !strcmp(lexema, "fim") ||
-      !strcmp(lexema, "escreva") || !strcmp(lexema, "leia") ||
-      !strcmp(lexema, "var") || !strcmp(lexema, "inteiro") ||
-      !strcmp(lexema, "booleano") || !strcmp(lexema, "verdadeiro") ||
-      !strcmp(lexema, "falso") || !strcmp(lexema, "procedimento") ||
-      !strcmp(lexema, "funcao") || !strcmp(lexema, "div") ||
-      !strcmp(lexema, "e") || !strcmp(lexema, "nao")) {
-    simbolo = malloc(sizeof(lexema) + 6);
+  lexvetglobal[size] = '\0';
+  puts(lexvetglobal);
+  // Dependendo do lexema, identifica uma das possÃ­veis palavras reservadas
+  if (!strcmp(lexvetglobal, "programa") || !strcmp(lexvetglobal, "se") ||
+      !strcmp(lexvetglobal, "entao") || !strcmp(lexvetglobal, "senao") ||
+      !strcmp(lexvetglobal, "enquanto") || !strcmp(lexvetglobal, "faca") ||
+      !strcmp(lexvetglobal, "inicio") || !strcmp(lexvetglobal, "fim") ||
+      !strcmp(lexvetglobal, "escreva") || !strcmp(lexvetglobal, "leia") ||
+      !strcmp(lexvetglobal, "var") || !strcmp(lexvetglobal, "inteiro") ||
+      !strcmp(lexvetglobal, "booleano") || !strcmp(lexvetglobal, "verdadeiro") ||
+      !strcmp(lexvetglobal, "falso") || !strcmp(lexvetglobal, "procedimento") ||
+      !strcmp(lexvetglobal, "funcao") || !strcmp(lexvetglobal, "div") ||
+      !strcmp(lexvetglobal, "e") || !strcmp(lexvetglobal, "ou") || !strcmp(lexvetglobal, "nao")) {
     simbolo[0] = 's';
-    strcat(simbolo, lexema);
-    AppendToken(lexema, simbolo);
+    simbolo[1] = '\0';
+    strcat(simbolo, lexvetglobal);
+    AppendToken(lexvetglobal, simbolo);
   }
-  // Caso não seja nenhuma das palavras reservadas, é um identificador
+  // Caso nÃ£o seja nenhuma das palavras reservadas, Ã© um identificador
   else {
-    AppendToken(lexema, "sidentificador");
+    AppendToken(lexvetglobal, "sidentificador");
   }
-  free(lexema);
   return 0;
 }
 
 // Processa uma atribuicao
 int ProcessAttribution(char *currentchar) {
-  char *lexema;
-  lexema = malloc(sizeof(char));
-  lexema[0] = *currentchar;
+  lexvetglobal[0] = *currentchar;
   *currentchar = fgetc(fptr);
-  // Caso possua um "=" após ":", eh uma atribuicao
+  // Caso possua um "=" apÃ³s ":", eh uma atribuicao
   if (*currentchar == '=') {
-    lexema[1] = *currentchar;
+    lexvetglobal[1] = *currentchar;
+    lexvetglobal[2] = '\0';
     *currentchar = fgetc(fptr);
-    AppendToken(lexema, "satribuicao");
-    free(lexema);
+    AppendToken(lexvetglobal, "satribuicao");
   }
   // Senao, eh dois pontos
   else {
-    AppendToken(lexema, "sdoispontos");
-    free(lexema);
+  	lexvetglobal[1] = '\0';
+    AppendToken(lexvetglobal, "sdoispontos");
   }
   return 0;
 }
+// Processa um operador aritmetico
+int ProcessArithmeticOperator(char *currentchar) {
+	lexvetglobal[0] = *currentchar;
+	lexvetglobal[1] = '\0';
+	*currentchar = fgetc(fptr);
+	//separa os simbolos e gera os tokens
+	switch(lexvetglobal[0]){
+		case '+':
+			AppendToken(lexvetglobal,"smais");
+			return 0;
+			break;
+		case '-':
+			AppendToken(lexvetglobal,"smenos");
+			return 0;
+			break;
+		case '*':
+			AppendToken(lexvetglobal,"smult");
+			return 0;
+			break;
+		default:
+			return 1;
+	}
+}
 
+//Processa operador relacional
+int ProcessRelationalOperator(char* currentchar){
+	lexvetglobal[0] = *currentchar;
+	switch (lexvetglobal[0]){
+		case '=':
+			lexvetglobal[1] = '\0';
+			AppendToken(lexvetglobal,"sig");
+			*currentchar = fgetc(fptr);
+			return 0;
+			break;
+		case '!':
+			*currentchar = fgetc(fptr);
+			lexvetglobal[1] = *currentchar;
+			*currentchar = fgetc(fptr);
+			lexvetglobal[2] = '\0';
+			AppendToken(lexvetglobal,"sdif");
+			return 0;
+			break;
+		case '<':
+			*currentchar = fgetc(fptr);
+			if(*currentchar == '='){
+				lexvetglobal[1] = *currentchar;
+				lexvetglobal[2] = '\0';
+				*currentchar = fgetc(fptr);
+				AppendToken(lexvetglobal,"smenorig");
+				return 0;
+			}
+			else{
+				lexvetglobal[1] = '\0';
+				AppendToken(lexvetglobal,"smenor");
+				return 0;
+			}
+			break;
+		case '>':
+			*currentchar = fgetc(fptr);
+			if(*currentchar == '='){
+				lexvetglobal[1] = *currentchar;
+				lexvetglobal[2] = '\0';
+				*currentchar = fgetc(fptr);
+				AppendToken(lexvetglobal,"smaiorig");
+				return 0;
+			}
+			else{
+				lexvetglobal[1] = '\0';
+				AppendToken(lexvetglobal,"smaior");
+				return 0;
+			}
+			break;
+			
+		default:
+			return 1;		
+	}
+	return 1;
+}
+
+//Processa pontuacao
+int ProcessPunctuation(char* currentchar){
+	lexvetglobal[0] = *currentchar;
+	lexvetglobal[1] = '\0';
+	*currentchar = fgetc(fptr);
+	//separa os simbolos e gera os tokens
+	switch(lexvetglobal[0]){
+		case '.':
+			AppendToken(lexvetglobal,"sponto");
+			return 0;
+			break;
+		case ';':
+			AppendToken(lexvetglobal,"sponto_virgula");
+			return 0;
+			break;
+		case ',':
+			AppendToken(lexvetglobal,"svirgula");
+			return 0;
+			break;
+		case '(':
+			AppendToken(lexvetglobal,"sabre_parenteses");
+			return 0;
+			break;
+		case ')':
+			AppendToken(lexvetglobal,"sfecha_parenteses");
+			return 0;
+			break;
+		
+		default:
+			return 1;
+	}
+}
 // Segrega o lexema atual, redirecionando para a funcao que gerara o token
 int GetToken(char *currentchar) {
   printf("%c ", *currentchar);
@@ -156,20 +255,20 @@ int GetToken(char *currentchar) {
         // Se for operador aritmetico
         if (*currentchar == '+' || *currentchar == '-' || *currentchar == '*') {
           printf("EH OPERADOR ARITMETICO <+u+>\n");
-          *currentchar = fgetc(fptr);
+          ProcessArithmeticOperator(currentchar);
         } else {
           // Se for operador relacional
           if (*currentchar == '!' || *currentchar == '<' ||
               *currentchar == '>' || *currentchar == '=') {
             printf("EH OPERADOR RELACIONAL!!!! (UwU)\n");
-            *currentchar = fgetc(fptr);
+            ProcessRelationalOperator(currentchar);
           } else {
             // Se for pontuacao
             if (*currentchar == ';' || *currentchar == ',' ||
                 *currentchar == '(' || *currentchar == ')' ||
                 *currentchar == '.') {
               printf("EH PONTUACAO!!!!!!!!!!!! [OwO]\n");
-              *currentchar = fgetc(fptr);
+              ProcessPunctuation(currentchar);
             }
             // Se nao for nada disso, deu erro
             else {
