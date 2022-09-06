@@ -14,6 +14,7 @@ tokennode *THead = NULL;
 
 FILE *fptr;
 
+int currentrow = 1;
 char lexvetglobal[31];
 // Da append nos lexema e simbolo que foi reconhecido para a lista de tokens
 int AppendToken(char *lexema, char *simbolo) {
@@ -90,7 +91,7 @@ int ProcessWord(char *currentchar) {
   }
   lexvetglobal[size] = '\0';
   puts(lexvetglobal);
-  // Dependendo do lexema, identifica uma das possÃ­veis palavras reservadas
+  // Dependendo do lexema, identifica uma das possÃƒÂ­veis palavras reservadas
   if (!strcmp(lexvetglobal, "programa") || !strcmp(lexvetglobal, "se") ||
       !strcmp(lexvetglobal, "entao") || !strcmp(lexvetglobal, "senao") ||
       !strcmp(lexvetglobal, "enquanto") || !strcmp(lexvetglobal, "faca") ||
@@ -108,7 +109,7 @@ int ProcessWord(char *currentchar) {
     strcat(simbolo, lexvetglobal);
     AppendToken(lexvetglobal, simbolo);
   }
-  // Caso nÃ£o seja nenhuma das palavras reservadas, Ã© um identificador
+  // Caso nÃƒÂ£o seja nenhuma das palavras reservadas, ÃƒÂ© um identificador
   else {
     AppendToken(lexvetglobal, "sidentificador");
   }
@@ -119,7 +120,7 @@ int ProcessWord(char *currentchar) {
 int ProcessAttribution(char *currentchar) {
   lexvetglobal[0] = *currentchar;
   *currentchar = fgetc(fptr);
-  // Caso possua um "=" apÃ³s ":", eh uma atribuicao
+  // Caso possua um "=" apÃƒÂ³s ":", eh uma atribuicao
   if (*currentchar == '=') {
     lexvetglobal[1] = *currentchar;
     lexvetglobal[2] = '\0';
@@ -178,7 +179,7 @@ int ProcessRelationalOperator(char *currentchar) {
       break;
     }
     else {
-      printf("ERRO, falta de \"=\" apos \"!\"\n");
+      printf("ERRO, falta de \"=\" apos \"!\" na linha %d.\n",currentrow);
       exit(1);
     }
   case '<':
@@ -309,14 +310,29 @@ int main() {
       // Se o caracter lido for { significa que eh comeco de comentario, entao
       // ignora ate terminar o comentario
       if (currentchar == '{') {
+      	int rowbreaks = 0;
         while (currentchar != '}' && currentchar != EOF) {
-
+        	
+		  if(currentchar == '\n'){
+			rowbreaks++;
+		  }
           currentchar = fgetc(fptr);
         }
-        currentchar = fgetc(fptr);
+        
+        if(currentchar == EOF){
+        	printf("ERRO: comentario aberto sem fechamento na linha %d.",currentrow);
+        	exit(1);
+		}
+		else{
+			currentrow += rowbreaks;
+		   	currentchar = fgetc(fptr);
+		}
       }
       // quando tiver espacos, ignorar eles
       while (isspace(currentchar) && currentchar != EOF) {
+      	if(currentchar == '\n'){
+      		currentrow++;
+		  }
         currentchar = fgetc(fptr);
       }
     }
