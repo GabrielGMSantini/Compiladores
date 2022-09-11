@@ -2,20 +2,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include "pilha.h"
 // Estrutura que representa um no de uma lista ligada de Tokens
 typedef struct tokennode {
   char *lexema;
   char *simbolo;
   struct tokennode *next;
 } tokennode;
-
+//-------------------------------declaracoes-------------------------------------------------
 tokennode *THead = NULL;
 
 FILE *fptr;
 
 int currentrow = 1;
+
 char lexvetglobal[31];
+
+stacknode* topo = NULL;
 // Da append nos lexema e simbolo que foi reconhecido para a lista de tokens
 int AppendToken(char *lexema, char *simbolo) {
   tokennode *TStart = THead;
@@ -302,6 +305,7 @@ int main() {
     printf("Deu ruim!!!");
     exit(1);
   }
+  
   char currentchar;
   currentchar = fgetc(fptr);
   // Enquanto nao terminar o arquivo fonte
