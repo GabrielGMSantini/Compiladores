@@ -48,7 +48,7 @@ int AppendToken(char *lexema, char *simbolo) {
 // Printa a lista de tokens
 int PrintTokenList(tokennode *THeader) {
   int index = 1;
-  printf("\n\nLISTA DE TOKENS: \n");
+  printf("\nLISTA DE TOKENS: \n");
   printf("__________________\n\n");
   while (THeader != NULL) {
     printf("Token %d\n\n", index);
@@ -93,8 +93,7 @@ int ProcessWord(char *currentchar) {
     *currentchar = fgetc(fptr);
   }
   lexvetglobal[size] = '\0';
-  puts(lexvetglobal);
-  // Dependendo do lexema, identifica uma das possÃƒÂ­veis palavras reservadas
+  // Dependendo do lexema, identifica uma das possÃƒÆ’Ã‚Â­veis palavras reservadas
   if (!strcmp(lexvetglobal, "programa") || !strcmp(lexvetglobal, "se") ||
       !strcmp(lexvetglobal, "entao") || !strcmp(lexvetglobal, "senao") ||
       !strcmp(lexvetglobal, "enquanto") || !strcmp(lexvetglobal, "faca") ||
@@ -112,7 +111,7 @@ int ProcessWord(char *currentchar) {
     strcat(simbolo, lexvetglobal);
     AppendToken(lexvetglobal, simbolo);
   }
-  // Caso nÃƒÂ£o seja nenhuma das palavras reservadas, ÃƒÂ© um identificador
+  // Caso nÃƒÆ’Ã‚Â£o seja nenhuma das palavras reservadas, ÃƒÆ’Ã‚Â© um identificador
   else {
     AppendToken(lexvetglobal, "sidentificador");
   }
@@ -123,7 +122,7 @@ int ProcessWord(char *currentchar) {
 int ProcessAttribution(char *currentchar) {
   lexvetglobal[0] = *currentchar;
   *currentchar = fgetc(fptr);
-  // Caso possua um "=" apÃƒÂ³s ":", eh uma atribuicao
+  // Caso possua um "=" apÃƒÆ’Ã‚Â³s ":", eh uma atribuicao
   if (*currentchar == '=') {
     lexvetglobal[1] = *currentchar;
     lexvetglobal[2] = '\0';
@@ -254,44 +253,39 @@ int ProcessPunctuation(char *currentchar) {
 }
 // Segrega o lexema atual, redirecionando para a funcao que gerara o token
 int GetToken(char *currentchar) {
-  printf("%c ", *currentchar);
   // Se for digito
   if (isdigit(*currentchar)) {
-    printf("EH DIGITO 0/\n");
     ProcessNumber(currentchar);
   } else {
     // Se for letra
     if (isalpha(*currentchar)) {
-      printf("EH LETRA \\0\n");
       ProcessWord(currentchar);
     } else {
       // Se for atribuicao
       if (*currentchar == ':') {
-        printf("EH ATRIBUICAO!!!! (^_^)\n");
         ProcessAttribution(currentchar);
       } else {
         // Se for operador aritmetico
         if (*currentchar == '+' || *currentchar == '-' || *currentchar == '*') {
-          printf("EH OPERADOR ARITMETICO <+u+>\n");
           ProcessArithmeticOperator(currentchar);
         } else {
           // Se for operador relacional
           if (*currentchar == '!' || *currentchar == '<' ||
               *currentchar == '>' || *currentchar == '=') {
-            printf("EH OPERADOR RELACIONAL!!!! (UwU)\n");
             ProcessRelationalOperator(currentchar);
           } else {
             // Se for pontuacao
             if (*currentchar == ';' || *currentchar == ',' ||
                 *currentchar == '(' || *currentchar == ')' ||
                 *currentchar == '.') {
-              printf("EH PONTUACAO!!!!!!!!!!!! [OwO]\n");
               ProcessPunctuation(currentchar);
             }
             // Se nao for nada disso, deu erro
             else {
-              printf("CORRE NEGADAAAAA!!!!!!!!\n");
-              exit(1);
+              printf("Erro na linha %d, \"%c\" caracter nao reconhecido.\n", currentrow,*currentchar);
+              *currentchar = fgetc(fptr);
+
+			  //exit(1);
             }
           }
         }
@@ -301,7 +295,7 @@ int GetToken(char *currentchar) {
 }
 
 int main() {
-  if ((fptr = fopen("./gera1.txt", "r")) == NULL) {
+  if ((fptr = fopen("./teste_2.txt", "r")) == NULL) {
     printf("Deu ruim!!!");
     exit(1);
   }
