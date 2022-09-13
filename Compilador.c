@@ -181,8 +181,9 @@ int ProcessRelationalOperator(char *currentchar) {
       break;
     }
     else {
-      printf("ERRO, falta de \"=\" apos \"!\" na linha %d.\n",currentrow);
-      exit(1);
+      printf("ERRO: falta de \"=\" apos \"!\" na linha %d.\n",currentrow);
+      return 1;
+	  //exit(1);
     }
   case '<':
     *currentchar = fgetc(fptr);
@@ -282,7 +283,7 @@ int GetToken(char *currentchar) {
             }
             // Se nao for nada disso, deu erro
             else {
-              printf("Erro na linha %d, \"%c\" caracter nao reconhecido.\n", currentrow,*currentchar);
+              printf("ERRO: caracter \"%c\" nao reconhecido na linha %d.\n", *currentchar,currentrow);
               *currentchar = fgetc(fptr);
 
 			  //exit(1);
@@ -295,7 +296,7 @@ int GetToken(char *currentchar) {
 }
 
 int main() {
-  if ((fptr = fopen("./teste_2.txt", "r")) == NULL) {
+  if ((fptr = fopen("./teste_1.txt", "r")) == NULL) {
     printf("Deu ruim!!!");
     exit(1);
   }
