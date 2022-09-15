@@ -17,7 +17,7 @@ FILE *fptr;
 int currentrow = 1;
 
 char lexvetglobal[31];
-
+//-------------------------------lexico-----------------------------------------------------
 stacknode* topo = NULL;
 // Da append nos lexema e simbolo que foi reconhecido para a lista de tokens
 int AppendToken(char *lexema, char *simbolo) {
@@ -295,8 +295,47 @@ int GetToken(char *currentchar) {
   }
 }
 
+int lexical(char* currentchar){
+	while (*currentchar != EOF) {
+    while (((*currentchar) == '{' || isspace((*currentchar))) && (*currentchar)!= EOF) {
+      // Se o caracter lido for { significa que eh comeco de comentario, entao
+      // ignora ate terminar o comentario
+      if ((*currentchar) == '{') {
+      	int rowbreaks = 0;
+        while ((*currentchar) != '}' && (*currentchar) != EOF) {
+        	
+		  if((*currentchar) == '\n'){
+			rowbreaks++;
+		  }
+          (*currentchar) = fgetc(fptr);
+        }
+        
+        if((*currentchar) == EOF){
+        	printf("ERRO: comentario aberto sem fechamento na linha %d.",currentrow);
+        	exit(1);
+		}
+		else{
+			currentrow += rowbreaks;
+		   	(*currentchar) = fgetc(fptr);
+		}
+      }
+      // quando tiver espacos, ignorar eles
+      while (isspace((*currentchar)) && (*currentchar) != EOF) {
+      	if((*currentchar) == '\n'){
+      		currentrow++;
+		  }
+        (*currentchar) = fgetc(fptr);
+      }
+    }
+    if ((*currentchar) != EOF) {
+      // Gera token a partir da palavra atual
+      GetToken(currentchar);
+    }
+  }
+}
+//----------------------------------------------------------------
 int main() {
-  if ((fptr = fopen("./teste_1.txt", "r")) == NULL) {
+  if ((fptr = fopen("./gera1.txt", "r")) == NULL) {
     printf("Deu ruim!!!");
     exit(1);
   }
@@ -304,42 +343,7 @@ int main() {
   char currentchar;
   currentchar = fgetc(fptr);
   // Enquanto nao terminar o arquivo fonte
-  while (currentchar != EOF) {
-    while ((currentchar == '{' || isspace(currentchar)) && currentchar != EOF) {
-      // Se o caracter lido for { significa que eh comeco de comentario, entao
-      // ignora ate terminar o comentario
-      if (currentchar == '{') {
-      	int rowbreaks = 0;
-        while (currentchar != '}' && currentchar != EOF) {
-        	
-		  if(currentchar == '\n'){
-			rowbreaks++;
-		  }
-          currentchar = fgetc(fptr);
-        }
-        
-        if(currentchar == EOF){
-        	printf("ERRO: comentario aberto sem fechamento na linha %d.",currentrow);
-        	exit(1);
-		}
-		else{
-			currentrow += rowbreaks;
-		   	currentchar = fgetc(fptr);
-		}
-      }
-      // quando tiver espacos, ignorar eles
-      while (isspace(currentchar) && currentchar != EOF) {
-      	if(currentchar == '\n'){
-      		currentrow++;
-		  }
-        currentchar = fgetc(fptr);
-      }
-    }
-    if (currentchar != EOF) {
-      // Gera token a partir da palavra atual
-      GetToken(&currentchar);
-    }
-  }
+  lexical(&currentchar);
   PrintTokenList(THead);
   fclose(fptr);
   return 1;
