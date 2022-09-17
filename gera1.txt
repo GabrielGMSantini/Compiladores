@@ -2,8 +2,7 @@
 }
 
 programa test;
-var a,b,s: inteiro;                 
-                              
+var a,b,s: inteiro;           
  funcao soma: inteiro;
  var c,a,s: inteiro;                   
      z: booleano;                    
