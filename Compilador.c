@@ -16,6 +16,8 @@ FILE *fptr;
 int currentrow = 1;
 
 char lexvetglobal[31];
+
+stacknode* topo;
 //-------------------------------lexico-----------------------------------------------------
 
 // retorna um token com o lexema e simbolo definidos
@@ -56,7 +58,7 @@ token* ProcessWord(char *currentchar) {
     *currentchar = fgetc(fptr);
   }
   lexvetglobal[size] = '\0';
-  // Dependendo do lexema, identifica uma das possÃƒÆ’Ã‚Â­veis palavras reservadas
+  // Dependendo do lexema, identifica uma das possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­veis palavras reservadas
   if (!strcmp(lexvetglobal, "programa") || !strcmp(lexvetglobal, "se") ||
       !strcmp(lexvetglobal, "entao") || !strcmp(lexvetglobal, "senao") ||
       !strcmp(lexvetglobal, "enquanto") || !strcmp(lexvetglobal, "faca") ||
@@ -85,7 +87,7 @@ token* ProcessWord(char *currentchar) {
 token* ProcessAttribution(char *currentchar) {
   lexvetglobal[0] = *currentchar;
   *currentchar = fgetc(fptr);
-  // Caso possua um "=" apÃƒÆ’Ã‚Â³s ":", eh uma atribuicao
+  // Caso possua um "=" apÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³s ":", eh uma atribuicao
   if (*currentchar == '=') {
     lexvetglobal[1] = *currentchar;
     lexvetglobal[2] = '\0';
@@ -240,6 +242,8 @@ token* GetToken(char *currentchar) {
     }
   }
 }
+
+//Printa um token 
 int PrintToken(token* Token){
  	printf("__________________\n\n");
     printf("Lexema:   ");
@@ -251,8 +255,10 @@ int PrintToken(token* Token){
 	return 0;
 
 }
-int lexical(char* currentchar){
-	while (*currentchar != EOF) {
+
+//Ignora os espaços, comentarios e quebras de linha
+token* lexical(char* currentchar){
+	
     while (((*currentchar) == '{' || isspace((*currentchar))) && (*currentchar)!= EOF) {
       // Se o caracter lido for { significa que eh comeco de comentario, entao
       // ignora ate terminar o comentario
@@ -284,11 +290,131 @@ int lexical(char* currentchar){
     }
     if ((*currentchar) != EOF) {
       // Gera token a partir da palavra atual
-      token* Tatual;
-	  Tatual = GetToken(currentchar);
-	  PrintToken(Tatual);
+	  return(GetToken(currentchar));
     }
-  }
+}
+
+//---------------------------Sintatico----------------------------
+
+int VariableAnalyzer(token** token,char* currentchar){
+	//Enquanto nao for encontrado ":"
+	do{
+		//Se for um identificador
+		if(!strcmp("sidentificador",(*token)->simbolo)){
+			//-----pesquisa_duplicvar TODO
+			(*token) = lexical(currentchar);
+			//Se apos a variavel for encontrada "," ou ":"
+			if(!strcmp("svirgula",(*token)->simbolo)
+			 || !strcmp("sdoispontos",(*token)->simbolo)){
+			 	//Se o simbolo for virgula
+			 	if(!strcmp("svirgula",(*token)->simbolo)){
+			 		(*token) = lexical(currentchar);
+			 		//Se apos a virgula for encontrado ':'
+			 		if(!strcmp("sdoispontos",(*token)->simbolo)){
+			 			ThrowError(9,currentrow,NULL);
+					 }
+				 }
+			 }
+			//Se apos a variavel nao for encontrada "," ou ":"
+			 else{
+			 	ThrowError(8,currentrow,(*token)->lexema[0]);
+			 }
+		}
+		//Se nao for um identificador
+		else{
+			ThrowError(8,currentrow,(*token)->lexema[0]);
+		}
+	} while(strcmp("sdoispontos",(*token)->simbolo));
+	(*token) = lexical(currentchar);
+	// ------------------------------------------++_______________Paramos no Analisa Tipo
+	return 0;
+}
+
+//Analisa declaracao de variaveis
+int VarDecAnalyzer(token** token,char* currentchar){
+	//Se for uma variavel
+	if(!strcmp("svar",(*token)->simbolo)){
+		(*token) = 	lexical(currentchar);
+		//Se tiver um identificador apos a palavra reservada "var"
+		if(!strcmp("sidentificador",(*token)->simbolo)){
+			while(!strcmp("sidentificador",(*token)->simbolo)){
+				VariableAnalyzer(token,currentchar);
+				//Se apos o tipo da variavel for encontrado um ";"
+				if(!strcmp("sponto_virgula",(*token)->simbolo)){
+					(*token) = lexical(currentchar);
+				}
+				//Se apos o tipo da variavel nao for encontrado um ";"
+				else{
+					ThrowError(6,currentrow,(*token)->lexema[0]);
+				}
+			}
+		}
+		
+		//Se nao tiver um identificador apos a palavra reservada "var"
+		else{
+			ThrowError(7,currentrow,NULL);
+		}
+	}
+	return 0;
+}
+
+//Analisa declaracao de subrotinas
+int SubRoutineAnalyzer(token** token, char* currentchar){
+	return 0;
+}
+
+//Analisa comandos
+int CommandAnalyzer(token** token, char* currentchar){
+	return 0;
+}
+
+//Analisa bloco
+int BlockAnalyzer(char* currentchar){
+	token* token;
+	token = lexical(currentchar);
+	VarDecAnalyzer(&token, currentchar);
+	SubRoutineAnalyzer(&token, currentchar);
+	CommandAnalyzer(&token, currentchar);
+	
+  	if(currentchar != EOF){
+  		PrintToken(token);
+	}
+	return 0;
+}
+
+//Analisador sintatico
+int Parser(){
+	char currentchar;
+  currentchar = fgetc(fptr);
+  	//----int rotulo = 1;
+	token* token;
+  	token = lexical(&currentchar);
+  	//Se comeca com a palavra reservada "programa"
+  	if(!strcmp("sprograma",token->simbolo)){
+	  	token = lexical(&currentchar);
+	  	//Se declarar o identificador do programa
+		if(!strcmp("sidentificador",token->simbolo)){
+	  		Push(&topo,token->lexema,0,"nomedeprograma",0);
+	  		token = lexical(&currentchar);
+	  		//Se o proximo token for um ";"
+	  		if(!strcmp("sponto_virgula",token->simbolo)){
+				BlockAnalyzer(&currentchar);
+			}
+			//Se o proximo token nao for ";"
+			else{
+				ThrowError(6,currentrow,token->lexema[0]);
+			}
+		}
+		//Se nao declarar o identificador do programa
+		else{
+		  	ThrowError(5,currentrow,NULL);
+		}
+	}
+	//Se nao for a palavra reservada "programa"
+	else{
+		ThrowError(4,currentrow,NULL);
+	}
+	return 0;
 }
 //----------------------------------------------------------------
 int main() {
@@ -296,11 +422,7 @@ int main() {
     printf("Deu ruim!!!");
     exit(1);
   }
-  
-  char currentchar;
-  currentchar = fgetc(fptr);
-  // Enquanto nao terminar o arquivo fonte
-  lexical(&currentchar);
+  Parser(); 
   fclose(fptr);
   return 1;
 }
