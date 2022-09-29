@@ -65,14 +65,47 @@ int Printstack(stacknode* topo){
 */
 identifier* Consultstack(char* nome, stacknode* topo){
 	while(topo != NULL && strcmp(topo->identificador.nome,nome)){
-		
-			topo = topo->next;
-		
+		topo = topo->next;
 		if(topo==NULL){
-			printf("oi");
 			return NULL;
 		} 
 		
+	}
+	return &(topo->identificador);
+}
+
+//Procura uma variável cujo nome bate com o nome passado
+identifier* DuplicvarSearch(char* nome, stacknode* topo){
+	while(topo != NULL && (strcmp(topo->identificador.nome,nome) && (strcmp(topo->identificador.tipo,"inteiro") || strcmp(topo->identificador.tipo,"booleano"))) && topo->identificador.escopo == 0){
+		topo = topo->next;
+		if(topo==NULL){
+			return NULL;
+		}
+	}
+	if(topo->identificador.escopo != 0){
+		return NULL;
+	}
+	return &(topo->identificador);
+}
+
+//Procura um procedimento cujo nome bate com o nome passado
+identifier* DuplicprocSearch(char* nome, stacknode* topo){
+	while(topo != NULL && (strcmp(topo->identificador.nome,nome) && strcmp(topo->identificador.tipo,"procedimento"))){
+		topo = topo->next;
+		if(topo==NULL){
+			return NULL;
+		}
+	}
+	return &(topo->identificador);
+}
+
+//Procura uma funcao cujo nome bate com o nome passado
+identifier* DuplicfuncSearch(char* nome, stacknode* topo){
+	while(topo != NULL && (strcmp(topo->identificador.nome,nome) && (strcmp(topo->identificador.tipo,"funcao inteiro") || strcmp(topo->identificador.tipo,"funcao booleano")))){
+		topo = topo->next;
+		if(topo==NULL){
+			return NULL;
+		}
 	}
 	return &(topo->identificador);
 }
@@ -90,6 +123,17 @@ int Identifytype(char* tipo, stacknode** topo){
 	return 0;
 }
 
+//Quebra o galho atual
+int Getoff(stacknode** topo){
+	printf("oi");
+	while((*topo)->identificador.escopo == 0){
+		printf("%d ",(*topo)->identificador.escopo);
+		stacknode* temp = (*topo);
+		(*topo) = (*topo)->next;
+		free(temp);
+	}
+	return 0;
+}
 /*
 Testes feitos:
 	Push(&topo,"oi",0,"tipooi",1234154);

@@ -1,14 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void ThrowError(int errnum, int row, char currentchar){
+void ThrowError(int errnum, int row, char* currentchar){
 	switch (errnum){
 		case 1:
 			printf("ERRO: falta de \"=\" apos \"!\" na linha %d.\n",row);
 			exit (1);
 			break;
 		case 2:
-			printf("ERRO: caracter \"%c\" nao reconhecido na linha %d.\n", currentchar, row);
+			printf("ERRO: caracter \"%c\" nao reconhecido na linha %d.\n", currentchar[0], row);
 			exit(2);
 			break;
 		case 3:
@@ -24,7 +24,7 @@ void ThrowError(int errnum, int row, char currentchar){
         	exit(5);
         	break;
         case 6:
-        	printf("ERRO: caracter \"%c\" inesperado na linha %d. O caracter esperado era ';'",currentchar,row);
+        	printf("ERRO: caracter \"%c\" inesperado na linha %d. O caracter esperado era ';'",currentchar[0],row);
         	exit(6);
         	break;
         case 7:
@@ -32,12 +32,45 @@ void ThrowError(int errnum, int row, char currentchar){
         	exit(7);
         	break;
         case 8:
-        	printf("ERRO: caracter \"%c\" inesperado durante declaracao de variaveis na linha %d",currentchar,row);
+        	printf("ERRO: caracter \"%c\" inesperado durante declaracao de variaveis na linha %d",currentchar[0],row);
         	exit(8);
         	break;
         case 9:
         	printf("ERRO: caracter \":\" encontrado logo apos \",\" na linha %d",row);
         	exit(9);
+        	break;
+        case 10:
+        	printf("ERRO: variavel na linha %d ja declarada: ",row);
+        	puts(currentchar);
+        	exit(10);
+        	break;
+        case 11:
+        	printf("ERRO: tipo nao reconhecido na linha %d: \"",row);
+        	fputs(currentchar, stdout);
+        	printf("\". Os tipos esperados sao: inteiro e booleano");
+        	exit(11);
+        	break;
+        case 12:
+        	printf("ERRO: procedimento na linha %d ja declarado: ",row);
+        	puts(currentchar);
+        	exit(12);
+        	break;
+        case 13:
+        	printf("ERRO: esperado nome identificador apos palavra reservada \"procedimento\" na linha %d",row);
+        	exit(13);
+        	break;
+        case 14:
+        	printf("ERRO: esperado nome identificador apos palavra reservada \"funcao\" na linha %d",row);
+        	exit(14);
+        	break;
+        case 15:
+        	printf("ERRO: funcao na linha %d ja declarada: ",row);
+        	puts(currentchar);
+        	exit(15);
+        	break;
+         case 16:
+        	printf("ERRO: caracter \"%c\" inesperado na linha %d. O caracter esperado era ':'",currentchar[0],row);
+        	exit(16);
         	break;
 		default:
 			printf("Erro: erro desconhecido na linha %d", row);
