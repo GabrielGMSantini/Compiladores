@@ -68,9 +68,64 @@ void ThrowError(int errnum, int row, char* currentchar){
         	puts(currentchar);
         	exit(15);
         	break;
-         case 16:
+        case 16:
         	printf("ERRO: caracter \"%c\" inesperado na linha %d. O caracter esperado era ':'",currentchar[0],row);
         	exit(16);
+        	break;
+        case 17:
+        	printf("ERRO: esperado palavra reservada \"inicio\" na linha %d.\nPalavra encontrada foi: ",row);
+        	puts(currentchar);
+        	exit(17);
+        	break;
+        case 18:
+        	printf("ERRO: funcao ou variavel ");
+        	fputs(currentchar,stdout);
+        	printf(" nao declarada, encontrada na linha %d",row);
+        	exit(18);
+        	break;
+        case 19:
+        	printf("ERRO: esperado caracter ')' apos expressao ou identificador em %d",row);
+        	exit(19);
+        	break;
+        case 20:
+        	printf("ERRO: palavra ");
+        	fputs(currentchar, stdout);
+        	printf(", encontrada na linha %d, nao e reconhecida como um termo",row);
+        	exit(20);
+        	break;
+        case 21:
+        	printf("ERRO: palavra ");
+        	fputs(currentchar, stdout);
+        	printf(", encontrada na linha %d, nao foi declarada como procedimento no escopo atual",row);
+        	exit(21);
+        	break;
+        case 22:
+        	printf("ERRO: procedimento ");
+        	fputs(currentchar, stdout);
+        	printf(", encontrado na linha %d, nao declarado anteriormente", row);
+        	exit(22);
+        	break;
+        case 23:
+        	printf("ERRO: esperada a palavra reservada \"entao\" durante comando condicional na linha %d\nA palavra encontrada foi: ",row);
+        	puts(currentchar);
+        	exit(23);
+        	break;
+        case 24:
+        	printf("ERRO: esperada a palavra reservada \"faca\" durante comando de repeticao na linha %d\nA palavra encontrada foi: ",row);
+        	puts(currentchar);
+        	exit(24);
+        	break;
+        case 25:
+        	printf("ERRO: \"(\" esperado apos chamada de comando na linha %d",row);
+        	exit(25);
+        	break;
+        case 26:
+        	printf("ERRO: identificador esperado apos \"(\" na linha %d",row);
+        	exit(26);
+        	break;
+        case 27:
+        	printf("ERRO: esperado \";\" apos comando nao final na linha %d",row);
+        	exit(27);
         	break;
 		default:
 			printf("Erro: erro desconhecido na linha %d", row);

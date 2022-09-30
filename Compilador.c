@@ -5,10 +5,10 @@
 #include "pilha.h"
 #include "erro.h"
 // Estrutura que representa um no de uma lista ligada de Tokens
-typedef struct token {
+typedef struct Token {
   char *lexema;
   char *simbolo;
-} token;
+} Token;
 //-------------------------------declaracoes-------------------------------------------------
 
 FILE *fptr;
@@ -22,8 +22,8 @@ stacknode* topo;
 //-------------------------------lexico-----------------------------------------------------
 
 // retorna um token com o lexema e simbolo definidos
-token* GenToken(char *lexema, char *simbolo) {
-	token* T = malloc(sizeof(token));
+Token* GenToken(char *lexema, char *simbolo) {
+	Token* T = malloc(sizeof(Token));
   	T->lexema = malloc(strlen(lexema));
   	T->simbolo = malloc(strlen(simbolo));
 	strcpy(T->lexema,lexema);
@@ -32,7 +32,7 @@ token* GenToken(char *lexema, char *simbolo) {
 }
 
 // Processa a detecao de um digito
-token* ProcessNumber(char *currentchar) {
+Token* ProcessNumber(char *currentchar) {
   int size = 1;
   lexvetglobal[size - 1] = *currentchar;
   *currentchar = fgetc(fptr);
@@ -46,7 +46,7 @@ token* ProcessNumber(char *currentchar) {
 }
 
 // Processa identificador ou palavra reservada
-token* ProcessWord(char *currentchar) {
+Token* ProcessWord(char *currentchar) {
   char simbolo[20];
   int size = 1;
   lexvetglobal[size - 1] = *currentchar;
@@ -85,7 +85,7 @@ token* ProcessWord(char *currentchar) {
 }
 
 // Processa uma atribuicao
-token* ProcessAttribution(char *currentchar) {
+Token* ProcessAttribution(char *currentchar) {
   lexvetglobal[0] = *currentchar;
   *currentchar = fgetc(fptr);
   // Caso possua um "=" apÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³s ":", eh uma atribuicao
@@ -103,7 +103,7 @@ token* ProcessAttribution(char *currentchar) {
   return NULL;
 }
 // Processa um operador aritmetico
-token* ProcessArithmeticOperator(char *currentchar) {
+Token* ProcessArithmeticOperator(char *currentchar) {
   lexvetglobal[0] = *currentchar;
   lexvetglobal[1] = '\0';
   *currentchar = fgetc(fptr);
@@ -124,7 +124,7 @@ token* ProcessArithmeticOperator(char *currentchar) {
 }
 
 // Processa operador relacional
-token* ProcessRelationalOperator(char *currentchar) {
+Token* ProcessRelationalOperator(char *currentchar) {
   lexvetglobal[0] = *currentchar;
   switch (lexvetglobal[0]) {
   case '=':
@@ -176,7 +176,7 @@ token* ProcessRelationalOperator(char *currentchar) {
 }
 
 // Processa pontuacao
-token* ProcessPunctuation(char *currentchar) {
+Token* ProcessPunctuation(char *currentchar) {
   lexvetglobal[0] = *currentchar;
   lexvetglobal[1] = '\0';
   *currentchar = fgetc(fptr);
@@ -203,7 +203,7 @@ token* ProcessPunctuation(char *currentchar) {
   }
 }
 // Segrega o lexema atual, redirecionando para a funcao que gerara o token
-token* GetToken(char *currentchar) {
+Token* GetToken(char *currentchar) {
   // Se for digito
   if (isdigit(*currentchar)) {
     return (ProcessNumber(currentchar));
@@ -245,7 +245,7 @@ token* GetToken(char *currentchar) {
 }
 
 //Printa um token 
-int PrintToken(token* Token){
+int PrintToken(Token* Token){
  	printf("__________________\n\n");
     printf("Lexema:   ");
     puts(Token->lexema);
@@ -258,7 +258,7 @@ int PrintToken(token* Token){
 }
 
 //Ignora os espaços, comentarios e quebras de linha
-token* lexical(char* currentchar){
+Token* lexical(char* currentchar){
 	
     while (((*currentchar) == '{' || isspace((*currentchar))) && (*currentchar)!= EOF) {
       // Se o caracter lido for { significa que eh comeco de comentario, entao
@@ -296,9 +296,9 @@ token* lexical(char* currentchar){
 }
 
 //---------------------------Sintatico----------------------------
-int BlockAnalyzer(token**, char*);
+int BlockAnalyzer(Token**, char*);
 //Analisa o tipo da variavel
-int TypeAnalyzer(token** token, char* currentchar){
+int TypeAnalyzer(Token** token, char* currentchar){
 	//Se n�o for booleano ou inteiro
 	if(strcmp("sinteiro",(*token)->simbolo) && strcmp("sbooleano",(*token)->simbolo)){
 		ThrowError(11,currentrow,(*token)->lexema);
@@ -311,7 +311,7 @@ int TypeAnalyzer(token** token, char* currentchar){
 }
 
 //Analisa a declaracao das variavel que compartilham um tipo
-int VariableAnalyzer(token** token,char* currentchar){
+int VariableAnalyzer(Token** token,char* currentchar){
 	//Enquanto nao for encontrado ":"
 	do{
 		//Se for um identificador
@@ -353,7 +353,7 @@ int VariableAnalyzer(token** token,char* currentchar){
 }
 
 //Analisa declaracao de variaveis
-int VarDecAnalyzer(token** token,char* currentchar){
+int VarDecAnalyzer(Token** token,char* currentchar){
 	//Se for uma variavel
 	if(!strcmp("svar",(*token)->simbolo)){
 		(*token) = 	lexical(currentchar);
@@ -382,7 +382,7 @@ int VarDecAnalyzer(token** token,char* currentchar){
 }
 
 //Analisa declaracao de procedimento
-int AnalyzeProcDeclaration(token** token, char* currentchar){
+int AnalyzeProcDeclaration(Token** token, char* currentchar){
 	(*token) = lexical(currentchar);
 	//inicia um novo galho
 	char nivel = 'L';
@@ -415,7 +415,7 @@ int AnalyzeProcDeclaration(token** token, char* currentchar){
 	return 0;
 }
 
-int AnalyzeFuncDeclaration(token** token, char* currentchar){
+int AnalyzeFuncDeclaration(Token** token, char* currentchar){
 	(*token) = lexical(currentchar);
 	//inicia um novo galho
 	char nivel = 'L';
@@ -441,7 +441,7 @@ int AnalyzeFuncDeclaration(token** token, char* currentchar){
 					(*token) = lexical(currentchar);
 					//Se o proximo token for ponto e virgula
 					if(!strcmp((*token)->simbolo,"sponto_virgula")){
-						printf("\n\n%d\n\n",currentrow);
+						
 						BlockAnalyzer(token,currentchar);
 					}
 					// Se nao for ;
@@ -468,12 +468,11 @@ int AnalyzeFuncDeclaration(token** token, char* currentchar){
 		ThrowError(14,currentrow,NULL);
 	}
 	Getoff(&topo);
-	Printstack(topo);
 	return 0;
 }
 
 //Analisa declaracao de subrotinas
-int SubRoutineAnalyzer(token** token, char* currentchar){
+int SubRoutineAnalyzer(Token** token, char* currentchar){
 	//Enquanto forem encontradas declaracoes de procedimentos ou funcoes
 	while(!strcmp((*token)->simbolo,"sprocedimento") || !strcmp((*token)->simbolo,"sfuncao")){
 		//Se for procedimento
@@ -487,22 +486,353 @@ int SubRoutineAnalyzer(token** token, char* currentchar){
 	return 0;
 }
 
+//Analisa chamada de funcao
+int FunctionAnalyzer(Token** token, char* currentchar, Token* identificador){
+	(*token) = lexical(currentchar);
+	return 0; 
+}
+
+
+//Analisa Fator
+int FactorAnalyzer(Token** token, char* currentchar, Token* identificador){
+	//Se for um identificador
+	if(!strcmp((*token)->simbolo,"sidentificador")){
+		identifier* check;
+   		check = Consultstack((*token)->lexema,topo);
+   		//Se encontrar um identificador de mesmo nome
+		if(check != NULL){
+		//Se o identificador for funcao inteiro ou booleano
+		if(!strcmp(check->tipo,"funcao inteiro") || !strcmp(check->tipo,"funcao booleano")){
+			FunctionAnalyzer(token,currentchar,identificador);
+		}
+		else{
+			(*token) = lexical(currentchar);
+		}
+		
+		}
+		//Se nao for encontrado o identificador na tabela de simbolos
+		else{
+			ThrowError(18,currentrow,(*token)->lexema);
+		}
+	}
+	//Se nao for um identificador
+	else{
+		//Se o token for um numero
+		if(!strcmp((*token)->simbolo,"snumero")){
+			(*token) = lexical(currentchar);
+		}
+		//Se nao for um numero
+		else{
+			//se for uma negacao
+			if(!strcmp((*token)->simbolo,"snao")){
+				(*token) = lexical(currentchar);
+				FactorAnalyzer(token,currentchar,identificador);
+			}
+			//se nao for uma negacao
+			else{
+				//Se for sabre parenteses
+				if(!strcmp((*token)->simbolo, "sabre_parenteses")){
+					(*token) = lexical(currentchar);
+					PhraseAnalyzer(token,currentchar,identificador);
+					//Verifica se fecha parenteses
+					if(!strcmp((*token)->simbolo, "sfecha_parenteses")){
+						(*token) = lexical(currentchar);
+					}
+					//Se nao encontrar fecha parenteses
+					else{
+						ThrowError(19,currentrow,(*token)->lexema);
+					}
+				}
+				//Se nao for sabre parenteses
+				else{
+					//Se for verdadeiro ou falso
+					if(!strcmp((*token)->lexema,"verdadeiro") || !strcmp((*token)->lexema,"falso")){
+						(*token) = lexical(currentchar);
+					}
+					//Se nao for verdadeiro nem falso
+					else{
+						ThrowError(20,currentrow,(*token)->lexema);
+					}
+				}
+			}
+		}
+	}
+	return 0;
+}
+
+
+//Analisa termo
+int WordAnalyzer(Token** token, char* currentchar, Token* identificador){
+	FactorAnalyzer(token,currentchar,identificador);
+	while(!strcmp((*token)->simbolo,"smult") || !strcmp((*token)->simbolo,"sdiv") || !strcmp((*token)->simbolo,"se")){
+		(*token) = lexical(currentchar);
+		FactorAnalyzer(token,currentchar,identificador);
+	}
+	return 0;
+}
+
+//Analisa expressao simples
+int SimplePhraseAnalyzer(Token** token, char* currentchar, Token* identificador){
+	//Se for mais ou menos
+	if(!strcmp((*token)->simbolo,"smais") || !strcmp((*token)->simbolo,"smenos")){
+		(*token) = lexical(currentchar);
+	}
+	WordAnalyzer(token,currentchar,identificador);
+	while(!strcmp((*token)->simbolo,"smais") || !strcmp((*token)->simbolo,"smenos") || !strcmp((*token)->simbolo,"sou")){
+		(*token) = lexical(currentchar);
+		WordAnalyzer(token,currentchar,identificador);
+	}
+	return 0;
+}
+
+//Analisa expressao
+int PhraseAnalyzer(Token** token, char* currentchar, Token* identificador){
+	SimplePhraseAnalyzer(token,currentchar,identificador);
+	if(!strcmp((*token)->simbolo,"smaior") || !strcmp((*token)->simbolo,"smaiorig") || !strcmp((*token)->simbolo,"sig") || !strcmp((*token)->simbolo,"smenor") || !strcmp((*token)->simbolo,"smenorig") || !strcmp((*token)->simbolo,"sdif")){
+		(*token) = lexical(currentchar);
+		SimplePhraseAnalyzer(token,currentchar,identificador);
+	}
+	return 0;
+}
+
+//Analisa atribuicao
+int AttAnalyzer(Token** token, char* currentchar, Token* identificador){
+	(*token) = lexical(currentchar);
+	PhraseAnalyzer(token,currentchar,identificador);
+	return 0;
+}
+
+//Analisa chamada de procedimento
+int ProcedureAnalyzer (Token** token, char* currentchar, Token* identificador){
+	//checa se o procedimento foi declarado
+	identifier* check;
+   	check = Consultstack(identificador->lexema,topo);
+   	//Se encontrar um identificador de mesmo nome
+	if(check != NULL){
+		//Se o identificador for funcao inteiro ou booleano
+		if(!strcmp(check->tipo,"procedimento")){
+			//(*token) = lexical(currentchar);
+		}
+		else{
+			ThrowError(21,currentrow,(*token)->lexema);
+		}
+	}
+	else{
+		ThrowError(22,currentrow,(*token)->lexema);
+	}
+	
+	return 0; 
+}
+
+//Analisa atribuicao ou chamada de procedimento
+int AnalyzeAttChProcedure(Token** token, char* currentchar){
+	//Salva o identificador
+	Token* tidentificador = (*token);
+	(*token) = lexical(currentchar);
+	//Se for atribuicao
+	if(!strcmp((*token)->simbolo,"satribuicao")){
+		AttAnalyzer(token,currentchar,tidentificador);
+	}
+	//Se nao for atribuicao, eh chamada de procedimento
+	else{
+		ProcedureAnalyzer(token,currentchar,tidentificador);
+		
+		
+	}
+	return 0;
+}
+
+//Analisa "se"
+int Analyzeif(Token** token, char* currentchar){
+	(*token) = lexical(currentchar);
+	PhraseAnalyzer(token,currentchar,NULL);
+	//Se for entao
+	if(!strcmp((*token)->simbolo,"sentao")){
+		(*token) = lexical(currentchar);
+		AnalyzeSimpleCommand(token,currentchar);
+		//Se for senao
+		if(!strcmp((*token)->simbolo,"ssenao")){
+			(*token) = lexical(currentchar);
+			AnalyzeSimpleCommand(token,currentchar);
+		}
+	}
+	//Se nao for entao
+	else{
+		ThrowError(23,currentrow,(*token)->lexema);
+	}
+	return 0;
+}
+
+//Analisa comando "enquanto"
+int Analyzewhile(Token** token, char* currentchar){
+	(*token) =lexical(currentchar);
+	PhraseAnalyzer(token,currentchar,NULL);
+	//Se for faca
+	if(!strcmp((*token)->simbolo,"sfaca")){
+		(*token) = lexical(currentchar);
+		AnalyzeSimpleCommand(token,currentchar);
+	}
+	else{
+		ThrowError(24,currentrow,(*token)->lexema);
+	}
+	
+}
+
+//Analisa comando "leia"
+int Analyzeread(Token** token,char* currentchar){
+	(*token) = lexical(currentchar);
+	//Se tiver sabre parenteses
+	if(!strcmp((*token)->simbolo,"sabre_parenteses")){
+		(*token) = lexical(currentchar);
+		//Se for um identificador
+		if(!strcmp((*token)->simbolo,"sidentificador")){
+			//Se a variavel esta declarada
+			if(DuplicvarSearchFull((*token)->lexema,topo) != NULL){
+				(*token) = lexical(currentchar);
+				//Se encontrar um fecha parenteses
+				if(!strcmp((*token)->simbolo,"sfecha_parenteses")){
+					(*token) = lexical(currentchar);
+				}
+				//Se nao encontrar ")"
+				else{
+					ThrowError(19,currentrow,(*token)->lexema);
+				}
+			}
+			//Se a variavel nao foi declarada
+			else{
+				ThrowError(18,currentrow,(*token)->lexema);
+			}
+		}
+		//Se nao for um identificador
+		else{
+			ThrowError(26,currentrow,(*token)->lexema);
+		}
+	}
+	//Se nao encontrar (
+	else{
+		ThrowError(25,currentrow,(*token)->lexema);
+	}
+}
+
+//Analisa comando escreva
+int Analyzewrite(Token** token, char* currentchar){
+	(*token) = lexical(currentchar);
+	//Se tiver sabre parenteses
+	if(!strcmp((*token)->simbolo,"sabre_parenteses")){
+		(*token) = lexical(currentchar);
+		//Se for um identificador
+		if(!strcmp((*token)->simbolo,"sidentificador")){
+			//Se a variavel esta declarada
+			if(DuplicvarSearchFull((*token)->lexema,topo) != NULL){
+				(*token) = lexical(currentchar);
+				//Se encontrar um fecha parenteses
+				if(!strcmp((*token)->simbolo,"sfecha_parenteses")){
+					(*token) = lexical(currentchar);
+				}
+				//Se nao encontrar ")"
+				else{
+					ThrowError(19,currentrow,(*token)->lexema);
+				}
+			}
+			//Se a variavel nao foi declarada
+			else{
+				ThrowError(18,currentrow,(*token)->lexema);
+			}
+		}
+		//Se nao for um identificador
+		else{
+			ThrowError(26,currentrow,(*token)->lexema);
+		}
+	}
+	//Se nao encontrar (
+	else{
+		ThrowError(25,currentrow,(*token)->lexema);
+	}
+}
+
+//Analisa comando simples
+int AnalyzeSimpleCommand(Token** token, char* currentchar){
+	//Se for um identificador
+	
+	if(!strcmp((*token)->simbolo,"sidentificador")){
+		AnalyzeAttChProcedure(token,currentchar);
+	}
+	//Se nao for identificador
+	else{
+		//Se for um "se"
+		if(!strcmp((*token)->simbolo,"sse")){
+			Analyzeif(token,currentchar);
+		}
+		//Se nao for "se"
+		else{
+			//Se for enquanto
+			if(!strcmp((*token)->simbolo,"senquanto")){
+				Analyzewhile(token,currentchar);
+			}
+			//Se nao for enquanto
+			else{
+				//Se for leia
+				if(!strcmp((*token)->simbolo,"sleia")){
+					Analyzeread(token,currentchar);
+				}
+				//Se nao for leia
+				else{
+					//Se for escreva
+					if(!strcmp((*token)->simbolo,"sescreva")){
+						Analyzewrite(token,currentchar);
+					}
+					//Se nao for escreva
+					else{
+						CommandAnalyzer(token,currentchar);
+					}
+				}
+			}
+		}
+	}
+	return 0;
+}
+
 //Analisa comandos
-int CommandAnalyzer(token** token, char* currentchar){
+int CommandAnalyzer(Token** token, char* currentchar){
+	//Se for inicio de comando
+	if(!strcmp((*token)->simbolo, "sinicio")){
+		(*token) = lexical(currentchar);
+		
+		AnalyzeSimpleCommand(token,currentchar);
+		//Enquanto nao encontrar fim
+		while(strcmp((*token)->simbolo,"sfim")){
+			//Se for ;
+			if(!strcmp((*token)->simbolo,"sponto_virgula")){
+				
+				(*token) = lexical(currentchar);
+				//Se nao for fim
+				if(strcmp((*token)->simbolo,"sfim")){
+					AnalyzeSimpleCommand(token,currentchar);
+				}
+				
+			}
+			//Se nao for ;
+			else{
+				ThrowError(27,currentrow,(*token)->lexema);
+			}
+		}
+		(*token) = lexical(currentchar);
+		
+	}
+	//Se nao for encontrado inicio de comando
+	else{
+		ThrowError(17,currentrow,(*token)->lexema);
+	}
 	return 0;
 }
 
 //Analisa bloco
-int BlockAnalyzer(token** token, char* currentchar){
+int BlockAnalyzer(Token** token, char* currentchar){
 	(*token) = lexical(currentchar);
 	VarDecAnalyzer(token, currentchar);
 	SubRoutineAnalyzer(token, currentchar);
-	//---------------------------------------Paramos em analisa comando-----------
 	CommandAnalyzer(token, currentchar);
-	//Printstack(topo);
-  	if(*currentchar != EOF){
-  		PrintToken(*token);
-	}
+  	
 	return 0;
 }
 
@@ -511,7 +841,7 @@ int Parser(){
 	char currentchar;
   currentchar = fgetc(fptr);
   	//----int rotulo = 1;
-	token* token;
+	Token* token;
   	token = lexical(&currentchar);
   	//Se comeca com a palavra reservada "programa"
   	if(!strcmp("sprograma",token->simbolo)){
@@ -547,7 +877,7 @@ int main() {
     exit(1);
   }
   Parser(); 
-  //Printstack(topo);
+  Printstack(topo);
   fclose(fptr);
   return 1;
 }

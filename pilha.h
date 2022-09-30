@@ -74,7 +74,7 @@ identifier* Consultstack(char* nome, stacknode* topo){
 	return &(topo->identificador);
 }
 
-//Procura uma variável cujo nome bate com o nome passado
+//Procura uma variável cujo nome bate com o nome passado no escopo atual
 identifier* DuplicvarSearch(char* nome, stacknode* topo){
 	while(topo != NULL && (strcmp(topo->identificador.nome,nome) && (strcmp(topo->identificador.tipo,"inteiro") || strcmp(topo->identificador.tipo,"booleano"))) && topo->identificador.escopo == 0){
 		topo = topo->next;
@@ -88,24 +88,40 @@ identifier* DuplicvarSearch(char* nome, stacknode* topo){
 	return &(topo->identificador);
 }
 
+//Pesquisa a tabela inteira em busca de uma variavel
+identifier* DuplicvarSearchFull(char* nome, stacknode* topo){
+	while(topo != NULL && (strcmp(topo->identificador.nome,nome) && (strcmp(topo->identificador.tipo,"inteiro") || strcmp(topo->identificador.tipo,"booleano")))){
+		topo = topo->next;
+		if(topo==NULL){
+		}
+	}
+	return &(topo->identificador);
+}
+
 //Procura um procedimento cujo nome bate com o nome passado
 identifier* DuplicprocSearch(char* nome, stacknode* topo){
-	while(topo != NULL && (strcmp(topo->identificador.nome,nome) && strcmp(topo->identificador.tipo,"procedimento"))){
+	while(topo != NULL && (strcmp(topo->identificador.nome,nome) && strcmp(topo->identificador.tipo,"procedimento")) && topo->identificador.escopo == 0){
 		topo = topo->next;
 		if(topo==NULL){
 			return NULL;
 		}
+	}
+	if(topo->identificador.escopo != 0){
+		return NULL;
 	}
 	return &(topo->identificador);
 }
 
 //Procura uma funcao cujo nome bate com o nome passado
 identifier* DuplicfuncSearch(char* nome, stacknode* topo){
-	while(topo != NULL && (strcmp(topo->identificador.nome,nome) && (strcmp(topo->identificador.tipo,"funcao inteiro") || strcmp(topo->identificador.tipo,"funcao booleano")))){
+	while(topo != NULL && (strcmp(topo->identificador.nome,nome) && (strcmp(topo->identificador.tipo,"funcao inteiro") || strcmp(topo->identificador.tipo,"funcao booleano"))) && topo->identificador.escopo == 0){
 		topo = topo->next;
 		if(topo==NULL){
 			return NULL;
 		}
+	}
+	if(topo->identificador.escopo != 0){
+		return NULL;
 	}
 	return &(topo->identificador);
 }
@@ -125,9 +141,7 @@ int Identifytype(char* tipo, stacknode** topo){
 
 //Quebra o galho atual
 int Getoff(stacknode** topo){
-	printf("oi");
 	while((*topo)->identificador.escopo == 0){
-		printf("%d ",(*topo)->identificador.escopo);
 		stacknode* temp = (*topo);
 		(*topo) = (*topo)->next;
 		free(temp);
