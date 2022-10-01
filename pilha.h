@@ -44,7 +44,7 @@ int Printstack(stacknode* topo){
 		printf("escopo: %d\n",topo->identificador.escopo);
 		printf("tipo: ");
 		puts(topo->identificador.tipo);
-		printf("memoria: %d\n",topo->identificador.memoria);
+		printf("memoria: %d\n\n",topo->identificador.memoria);
 		topo = topo->next;
 	}
 	return 0;

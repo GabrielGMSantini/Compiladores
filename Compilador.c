@@ -81,7 +81,7 @@ Token* ProcessWord(char *currentchar) {
   else {
     return(GenToken(lexvetglobal, "sidentificador"));
   }
-  return NULL;
+  return 255;
 }
 
 // Processa uma atribuicao
@@ -100,7 +100,7 @@ Token* ProcessAttribution(char *currentchar) {
     lexvetglobal[1] = '\0';
     return(GenToken(lexvetglobal, "sdoispontos"));
   }
-  return NULL;
+  return 255;
 }
 // Processa um operador aritmetico
 Token* ProcessArithmeticOperator(char *currentchar) {
@@ -119,7 +119,7 @@ Token* ProcessArithmeticOperator(char *currentchar) {
     return(GenToken(lexvetglobal, "smult"));
     break;
   default:
-    return NULL;
+    return 255;
   }
 }
 
@@ -170,9 +170,9 @@ Token* ProcessRelationalOperator(char *currentchar) {
     break;
 
   default:
-    return NULL;
+    return 255;
   }
-  return NULL;
+  return 255;
 }
 
 // Processa pontuacao
@@ -199,7 +199,7 @@ Token* ProcessPunctuation(char *currentchar) {
     break;
 
   default:
-    return NULL;
+    return 255;
   }
 }
 // Segrega o lexema atual, redirecionando para a funcao que gerara o token
@@ -853,6 +853,26 @@ int Parser(){
 	  		//Se o proximo token for um ";"
 	  		if(!strcmp("sponto_virgula",token->simbolo)){
 				BlockAnalyzer(&token,&currentchar);
+				//Se o arquivo tiver acabado sem ponto final
+				if(token == 255){
+					ThrowError(28,currentrow,NULL);
+				}
+				//Se for ponto final
+				if(!strcmp(token->simbolo,"sponto")){
+					token = lexical(&currentchar);
+					//Se for soh comentario ou fim do arquivo
+					if(currentchar == NULL || currentchar == EOF){
+						printf("Compilacao bem sucedida\n\nTabela de Simbolos:\n");
+					}
+					//Se ainda tiver codigo
+					else{
+						ThrowError(29,currentrow,token->lexema);
+					}
+				}
+				//Se nao for encontrado ponto final
+				else{
+					ThrowError(28,currentrow,token->lexema);
+				}
 			}
 			//Se o proximo token nao for ";"
 			else{

@@ -127,6 +127,14 @@ void ThrowError(int errnum, int row, char* currentchar){
         	printf("ERRO: esperado \";\" apos comando nao final na linha %d",row);
         	exit(27);
         	break;
+    	case 28:
+    		printf("ERRO: '.' esperado na linha %d",row);
+    		exit(28);
+    		break;
+    	case 29:
+    		printf("ERRO: codigo %s encontrado apos fim do programa na linha %d",currentchar,row);
+    		exit(29);
+    		break;
 		default:
 			printf("Erro: erro desconhecido na linha %d", row);
 			exit (404); 
