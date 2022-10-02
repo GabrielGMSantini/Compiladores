@@ -81,14 +81,14 @@ Token* ProcessWord(char *currentchar) {
   else {
     return(GenToken(lexvetglobal, "sidentificador"));
   }
-  return 255;
+   return(GenToken("Erro", "serro"));
 }
 
 // Processa uma atribuicao
 Token* ProcessAttribution(char *currentchar) {
   lexvetglobal[0] = *currentchar;
   *currentchar = fgetc(fptr);
-  // Caso possua um "=" apÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³s ":", eh uma atribuicao
+  // Caso possua um "=" apos um ":", eh uma atribuicao
   if (*currentchar == '=') {
     lexvetglobal[1] = *currentchar;
     lexvetglobal[2] = '\0';
@@ -100,7 +100,7 @@ Token* ProcessAttribution(char *currentchar) {
     lexvetglobal[1] = '\0';
     return(GenToken(lexvetglobal, "sdoispontos"));
   }
-  return 255;
+  return(GenToken("Erro", "serro"));
 }
 // Processa um operador aritmetico
 Token* ProcessArithmeticOperator(char *currentchar) {
@@ -119,7 +119,7 @@ Token* ProcessArithmeticOperator(char *currentchar) {
     return(GenToken(lexvetglobal, "smult"));
     break;
   default:
-    return 255;
+    return(GenToken("Erro", "serro"));
   }
 }
 
@@ -170,9 +170,9 @@ Token* ProcessRelationalOperator(char *currentchar) {
     break;
 
   default:
-    return 255;
+    return(GenToken("Erro", "serro"));
   }
-  return 255;
+  return(GenToken("Erro", "serro"));
 }
 
 // Processa pontuacao
@@ -199,7 +199,7 @@ Token* ProcessPunctuation(char *currentchar) {
     break;
 
   default:
-    return 255;
+    return(GenToken("Erro", "serro"));
   }
 }
 // Segrega o lexema atual, redirecionando para a funcao que gerara o token
@@ -293,6 +293,9 @@ Token* lexical(char* currentchar){
       // Gera token a partir da palavra atual
 	  return(GetToken(currentchar));
     }
+    else{
+    	return(GenToken("erro","serro"));
+	}
 }
 
 //---------------------------Sintatico----------------------------
@@ -854,7 +857,7 @@ int Parser(){
 	  		if(!strcmp("sponto_virgula",token->simbolo)){
 				BlockAnalyzer(&token,&currentchar);
 				//Se o arquivo tiver acabado sem ponto final
-				if(token == 255){
+				if(!strcmp(token->simbolo,"serro")){
 					ThrowError(28,currentrow,NULL);
 				}
 				//Se for ponto final
@@ -899,5 +902,5 @@ int main() {
   Parser(); 
   Printstack(topo);
   fclose(fptr);
-  return 1;
+  return 0;
 }
