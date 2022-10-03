@@ -78,9 +78,9 @@ void ThrowError(int errnum, int row, char* currentchar){
         	exit(17);
         	break;
         case 18:
-        	printf("ERRO: funcao ou variavel ");
+        	printf("ERRO: funcao ou variavel \"");
         	fputs(currentchar,stdout);
-        	printf(" nao declarada, encontrada na linha %d",row);
+        	printf("\" nao declarada, encontrada na linha %d",row);
         	exit(18);
         	break;
         case 19:
