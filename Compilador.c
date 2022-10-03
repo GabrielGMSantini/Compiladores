@@ -59,7 +59,7 @@ Token* ProcessWord(char *currentchar) {
     *currentchar = fgetc(fptr);
   }
   lexvetglobal[size] = '\0';
-  // Dependendo do lexema, identifica uma das possÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­veis palavras reservadas
+  // Dependendo do lexema, identifica uma das possÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­veis palavras reservadas
   if (!strcmp(lexvetglobal, "programa") || !strcmp(lexvetglobal, "se") ||
       !strcmp(lexvetglobal, "entao") || !strcmp(lexvetglobal, "senao") ||
       !strcmp(lexvetglobal, "enquanto") || !strcmp(lexvetglobal, "faca") ||
@@ -257,7 +257,7 @@ int PrintToken(Token* Token){
 
 }
 
-//Ignora os espaços, comentarios e quebras de linha
+//Ignora os espaÃ§os, comentarios e quebras de linha
 Token* lexical(char* currentchar){
 	
     while (((*currentchar) == '{' || isspace((*currentchar))) && (*currentchar)!= EOF) {
@@ -302,7 +302,7 @@ Token* lexical(char* currentchar){
 int BlockAnalyzer(Token**, char*);
 //Analisa o tipo da variavel
 int TypeAnalyzer(Token** token, char* currentchar){
-	//Se n�o for booleano ou inteiro
+	//Se não for booleano ou inteiro
 	if(strcmp("sinteiro",(*token)->simbolo) && strcmp("sbooleano",(*token)->simbolo)){
 		ThrowError(11,currentrow,(*token)->lexema);
 	}
@@ -319,7 +319,7 @@ int VariableAnalyzer(Token** token,char* currentchar){
 	do{
 		//Se for um identificador
 		if(!strcmp("sidentificador",(*token)->simbolo)){
-			//Se n�o tiver duplicata
+			//Se não tiver duplicata
 			
 			if(DuplicvarSearch((*token)->lexema,topo) == NULL){
 				Push(&topo, (*token)->lexema,0,"variavel",0);
@@ -600,8 +600,16 @@ int PhraseAnalyzer(Token** token, char* currentchar, Token* identificador){
 
 //Analisa atribuicao
 int AttAnalyzer(Token** token, char* currentchar, Token* identificador){
+	//Ve se foi declarado
+	if(DuplicvarSearchFull(identificador->lexema,topo) != NULL){
+	
 	(*token) = lexical(currentchar);
 	PhraseAnalyzer(token,currentchar,identificador);
+	}
+	//Se nao foi declarado
+	else{
+		ThrowError(18,currentrow,identificador->lexema);
+	}
 	return 0;
 }
 
@@ -617,11 +625,11 @@ int ProcedureAnalyzer (Token** token, char* currentchar, Token* identificador){
 			//(*token) = lexical(currentchar);
 		}
 		else{
-			ThrowError(21,currentrow,(*token)->lexema);
+			ThrowError(21,currentrow,identificador->lexema);
 		}
 	}
 	else{
-		ThrowError(22,currentrow,(*token)->lexema);
+		ThrowError(22,currentrow,identificador->lexema);
 	}
 	
 	return 0; 
@@ -895,7 +903,7 @@ int Parser(){
 }
 //----------------------------------------------------------------
 int main() {
-  if ((fptr = fopen("./gera1.txt", "r")) == NULL) {
+  if ((fptr = fopen("./teste_4.txt", "r")) == NULL) {
     printf("Deu ruim!!!");
     exit(1);
   }
