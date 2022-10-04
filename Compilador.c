@@ -59,7 +59,7 @@ Token* ProcessWord(char *currentchar) {
     *currentchar = fgetc(fptr);
   }
   lexvetglobal[size] = '\0';
-  // Dependendo do lexema, identifica uma das possÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­veis palavras reservadas
+  // Dependendo do lexema, identifica uma das possÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­veis palavras reservadas
   if (!strcmp(lexvetglobal, "programa") || !strcmp(lexvetglobal, "se") ||
       !strcmp(lexvetglobal, "entao") || !strcmp(lexvetglobal, "senao") ||
       !strcmp(lexvetglobal, "enquanto") || !strcmp(lexvetglobal, "faca") ||
@@ -257,7 +257,7 @@ int PrintToken(Token* Token){
 
 }
 
-//Ignora os espaÃ§os, comentarios e quebras de linha
+//Ignora os espaÃƒÂ§os, comentarios e quebras de linha
 Token* lexical(char* currentchar){
 	
     while (((*currentchar) == '{' || isspace((*currentchar))) && (*currentchar)!= EOF) {
@@ -302,7 +302,7 @@ Token* lexical(char* currentchar){
 int BlockAnalyzer(Token**, char*);
 //Analisa o tipo da variavel
 int TypeAnalyzer(Token** token, char* currentchar){
-	//Se não for booleano ou inteiro
+	//Se nÃ£o for booleano ou inteiro
 	if(strcmp("sinteiro",(*token)->simbolo) && strcmp("sbooleano",(*token)->simbolo)){
 		ThrowError(11,currentrow,(*token)->lexema);
 	}
@@ -319,7 +319,7 @@ int VariableAnalyzer(Token** token,char* currentchar){
 	do{
 		//Se for um identificador
 		if(!strcmp("sidentificador",(*token)->simbolo)){
-			//Se não tiver duplicata
+			//Se nÃ£o tiver duplicata
 			
 			if(DuplicvarSearch((*token)->lexema,topo) == NULL){
 				Push(&topo, (*token)->lexema,0,"variavel",0);
@@ -484,6 +484,14 @@ int SubRoutineAnalyzer(Token** token, char* currentchar){
 		}
 		else{
 			AnalyzeFuncDeclaration(token,currentchar);
+		}
+		//Verifica se tem ponto e virgula
+		if(!strcmp((*token)->simbolo,"sponto_virgula")){
+			(*token) = lexical(currentchar);
+		}
+		//Se o fim nao tiver ponto e virgula
+		else{
+			ThrowError(30,currentrow,(*token)->lexema);
 		}
 	}
 	return 0;
@@ -903,7 +911,7 @@ int Parser(){
 }
 //----------------------------------------------------------------
 int main() {
-  if ((fptr = fopen("./teste_4.txt", "r")) == NULL) {
+  if ((fptr = fopen("./gera1.txt", "r")) == NULL) {
     printf("Deu ruim!!!");
     exit(1);
   }
