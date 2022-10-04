@@ -135,6 +135,10 @@ void ThrowError(int errnum, int row, char* currentchar){
     		printf("ERRO: codigo %s encontrado apos fim do programa na linha %d",currentchar,row);
     		exit(29);
     		break;
+    	case 30:
+        	printf("ERRO: esperado \";\" apos fim de bloco de procedimento ou funcao na linha %d",row);
+        	exit(30);
+        	break;
 		default:
 			printf("Erro: erro desconhecido na linha %d", row);
 			exit (404); 
