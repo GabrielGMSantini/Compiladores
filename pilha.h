@@ -3,7 +3,7 @@
 #include <string.h>
 typedef struct identifier{
 	char nome[31];
-	char escopo; //Escolhido pois tem sÛ um Byte
+	char escopo; //Escolhido pois tem s√≥ um Byte
 	char tipo[31];
 	int memoria;
 }identifier;
@@ -74,18 +74,43 @@ identifier* Consultstack(char* nome, stacknode* topo){
 	return &(topo->identificador);
 }
 
-//Procura uma vari·vel cujo nome bate com o nome passado no escopo atual
+//Procura uma vari√°vel cujo nome bate com o nome passado no escopo atual
 identifier* DuplicvarSearch(char* nome, stacknode* topo){
-	while(topo != NULL && (strcmp(topo->identificador.nome,nome) && (strcmp(topo->identificador.tipo,"inteiro") || strcmp(topo->identificador.tipo,"booleano"))) && topo->identificador.escopo == 0){
+	//Ve no escopo da variavel se existe outra variavel ou 
+	while(topo != NULL && (strcmp(topo->identificador.nome,nome)) && topo->identificador.escopo == 0){
 		topo = topo->next;
 		if(topo==NULL){
 			return NULL;
 		}
 	}
-	if(topo->identificador.escopo != 0){
-		return NULL;
+	//Se ele nao encontrou nada no escopo, deve verificar no nivel inferior
+	if(topo->identificador.escopo != 0){	
+		while(topo != NULL && (strcmp(topo->identificador.nome,nome))){
+			topo = topo->next;
+			if(topo==NULL){
+				return NULL;
+			}
+		}
+		if(topo == NULL){
+			return NULL;
+		}
+		else{
+			//Se encontrou uma variavel fora do escopo, retorna NULL para identificar que nao foi encontrada nenhuma duplicata
+			if(!strcmp(topo->identificador.tipo,"inteiro") || !strcmp(topo->identificador.tipo,"booleano")){
+				return NULL;
+			}
+			//Se for encontrado um identificador e ele nao for variavel, eh procedimento ou funcao
+			else{
+				return &(topo->identificador);
+			}
+			
+		}
 	}
-	return &(topo->identificador);
+	else{
+		return &(topo->identificador);
+	}
+	
+	return NULL;
 }
 
 //Pesquisa a tabela inteira em busca de uma variavel
@@ -126,7 +151,7 @@ identifier* DuplicfuncSearch(char* nome, stacknode* topo){
 	return &(topo->identificador);
 }
 
-//Coloca o tipo definido em todas as vari·veis cujo tipo atual eh "variavel"
+//Coloca o tipo definido em todas as vari√°veis cujo tipo atual eh "variavel"
 int Identifytype(char* tipo, stacknode** topo){
 	stacknode* topobuf = *topo;
 	while((*topo)!= NULL){
