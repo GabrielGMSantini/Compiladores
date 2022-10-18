@@ -59,7 +59,7 @@ Token* ProcessWord(char *currentchar) {
     *currentchar = fgetc(fptr);
   }
   lexvetglobal[size] = '\0';
-  // Dependendo do lexema, identifica uma das possÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­veis palavras reservadas
+  // Dependendo do lexema, identifica uma das possÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­veis palavras reservadas
   if (!strcmp(lexvetglobal, "programa") || !strcmp(lexvetglobal, "se") ||
       !strcmp(lexvetglobal, "entao") || !strcmp(lexvetglobal, "senao") ||
       !strcmp(lexvetglobal, "enquanto") || !strcmp(lexvetglobal, "faca") ||
@@ -257,7 +257,7 @@ int PrintToken(Token* Token){
 
 }
 
-//Ignora os espaÃƒÂ§os, comentarios e quebras de linha
+//Ignora os espaÃƒÆ’Ã‚Â§os, comentarios e quebras de linha
 Token* lexical(char* currentchar){
 	
     while (((*currentchar) == '{' || isspace((*currentchar))) && (*currentchar)!= EOF) {
@@ -302,7 +302,7 @@ Token* lexical(char* currentchar){
 int BlockAnalyzer(Token**, char*);
 //Analisa o tipo da variavel
 int TypeAnalyzer(Token** token, char* currentchar){
-	//Se nÃ£o for booleano ou inteiro
+	//Se nÃƒÂ£o for booleano ou inteiro
 	if(strcmp("sinteiro",(*token)->simbolo) && strcmp("sbooleano",(*token)->simbolo)){
 		ThrowError(11,currentrow,(*token)->lexema);
 	}
@@ -319,7 +319,7 @@ int VariableAnalyzer(Token** token,char* currentchar){
 	do{
 		//Se for um identificador
 		if(!strcmp("sidentificador",(*token)->simbolo)){
-			//Se nÃ£o tiver duplicata
+			//Se nÃƒÂ£o tiver duplicata
 			
 			if(DuplicvarSearch((*token)->lexema,topo) == NULL){
 				Push(&topo, (*token)->lexema,0,"variavel",0);
@@ -392,7 +392,7 @@ int AnalyzeProcDeclaration(Token** token, char* currentchar){
 	//Se for encontrado um identificador
 	if(!strcmp((*token)->simbolo, "sidentificador")){
 		//Se o procedimento nao foi declarado antes
-		if(DuplicprocSearch((*token)->lexema,topo) == NULL){
+		if(Consultstack((*token)->lexema,topo) == NULL){
 			Push(&topo,(*token)->lexema,nivel,"procedimento",0);
 			(*token) = lexical(currentchar);
 			//Se o proximo token for ponto e virgula
@@ -425,7 +425,7 @@ int AnalyzeFuncDeclaration(Token** token, char* currentchar){
 	//Se for encontrado um identificador
 	if(!strcmp((*token)->simbolo, "sidentificador")){
 		//Se a funcao nao foi declarada antes
-		if(DuplicfuncSearch((*token)->lexema,topo) == NULL){
+		if(Consultstack((*token)->lexema,topo) == NULL){
 			Push(&topo,(*token)->lexema,nivel,"",0);
 			(*token) = lexical(currentchar);
 			//Se for encontrado :
