@@ -115,7 +115,7 @@ identifier* DuplicvarSearch(char* nome, stacknode* topo){
 
 //Pesquisa a tabela inteira em busca de uma variavel
 identifier* DuplicvarSearchFull(char* nome, stacknode* topo){
-	while(topo != NULL && (strcmp(topo->identificador.nome,nome) && (strcmp(topo->identificador.tipo,"inteiro") || strcmp(topo->identificador.tipo,"booleano")))){
+	while(topo != NULL && (strcmp(topo->identificador.nome,nome) || (strcmp(topo->identificador.tipo,"inteiro") && strcmp(topo->identificador.tipo,"booleano")))){
 		topo = topo->next;
 		if(topo==NULL){
 		}
