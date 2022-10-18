@@ -302,7 +302,7 @@ Token* lexical(char* currentchar){
 int BlockAnalyzer(Token**, char*);
 //Analisa o tipo da variavel
 int TypeAnalyzer(Token** token, char* currentchar){
-	//Se nÃƒÂ£o for booleano ou inteiro
+	//Se nao for booleano ou inteiro
 	if(strcmp("sinteiro",(*token)->simbolo) && strcmp("sbooleano",(*token)->simbolo)){
 		ThrowError(11,currentrow,(*token)->lexema);
 	}
@@ -608,8 +608,13 @@ int PhraseAnalyzer(Token** token, char* currentchar, Token* identificador){
 
 //Analisa atribuicao
 int AttAnalyzer(Token** token, char* currentchar, Token* identificador){
+	identifier* check;
+	check = Consultstack(identificador->lexema,topo);
+	if (check == NULL){
+		ThrowError(18,currentrow,identificador->lexema);
+	}
 	//Ve se foi declarado
-	if(DuplicvarSearchFull(identificador->lexema,topo) != NULL){
+	if(strcmp(check->tipo,"procedimento")){
 	
 	(*token) = lexical(currentchar);
 	PhraseAnalyzer(token,currentchar,identificador);
@@ -630,7 +635,7 @@ int ProcedureAnalyzer (Token** token, char* currentchar, Token* identificador){
 	if(check != NULL){
 		//Se o identificador for funcao inteiro ou booleano
 		if(!strcmp(check->tipo,"procedimento")){
-			//(*token) = lexical(currentchar);
+			
 		}
 		else{
 			ThrowError(21,currentrow,identificador->lexema);
@@ -742,7 +747,11 @@ int Analyzewrite(Token** token, char* currentchar){
 		//Se for um identificador
 		if(!strcmp((*token)->simbolo,"sidentificador")){
 			//Se a variavel esta declarada
-			if(DuplicvarSearchFull((*token)->lexema,topo) != NULL){
+			identifier* check = Consultstack((*token)->lexema,topo);
+			if(check == NULL){
+				ThrowError(18,currentrow,(*token)->lexema);
+			}
+			if(strcmp(check->tipo,"procedimento")){
 				(*token) = lexical(currentchar);
 				//Se encontrar um fecha parenteses
 				if(!strcmp((*token)->simbolo,"sfecha_parenteses")){
@@ -753,7 +762,7 @@ int Analyzewrite(Token** token, char* currentchar){
 					ThrowError(19,currentrow,(*token)->lexema);
 				}
 			}
-			//Se a variavel nao foi declarada
+			//Se a variavel ou funcao nao foi declarada
 			else{
 				ThrowError(18,currentrow,(*token)->lexema);
 			}
