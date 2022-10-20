@@ -19,6 +19,9 @@ char lexvetglobal[31];
 
 stacknode* topo;
 
+char strings[100][100];
+int stringsrow = 0;
+
 //-------------------------------lexico-----------------------------------------------------
 
 // retorna um token com o lexema e simbolo definidos
@@ -59,7 +62,7 @@ Token* ProcessWord(char *currentchar) {
     *currentchar = fgetc(fptr);
   }
   lexvetglobal[size] = '\0';
-  // Dependendo do lexema, identifica uma das possÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­veis palavras reservadas
+  // Dependendo do lexema, identifica uma das possÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­veis palavras reservadas
   if (!strcmp(lexvetglobal, "programa") || !strcmp(lexvetglobal, "se") ||
       !strcmp(lexvetglobal, "entao") || !strcmp(lexvetglobal, "senao") ||
       !strcmp(lexvetglobal, "enquanto") || !strcmp(lexvetglobal, "faca") ||
@@ -257,7 +260,7 @@ int PrintToken(Token* Token){
 
 }
 
-//Ignora os espaÃƒÆ’Ã‚Â§os, comentarios e quebras de linha
+//Ignora os espaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§os, comentarios e quebras de linha
 Token* lexical(char* currentchar){
 	
     while (((*currentchar) == '{' || isspace((*currentchar))) && (*currentchar)!= EOF) {
@@ -319,7 +322,7 @@ int VariableAnalyzer(Token** token,char* currentchar){
 	do{
 		//Se for um identificador
 		if(!strcmp("sidentificador",(*token)->simbolo)){
-			//Se nÃƒÂ£o tiver duplicata
+			//Se nÃƒÆ’Ã‚Â£o tiver duplicata
 			
 			if(DuplicvarSearch((*token)->lexema,topo) == NULL){
 				Push(&topo, (*token)->lexema,0,"variavel",0);
@@ -500,6 +503,8 @@ int SubRoutineAnalyzer(Token** token, char* currentchar){
 //Analisa chamada de funcao
 int FunctionAnalyzer(Token** token, char* currentchar, Token* identificador){
 	(*token) = lexical(currentchar);
+	strcpy(strings[stringsrow], (*token)->lexema);
+	stringsrow++;
 	return 0; 
 }
 
@@ -518,6 +523,8 @@ int FactorAnalyzer(Token** token, char* currentchar, Token* identificador){
 		}
 		else{
 			(*token) = lexical(currentchar);
+			strcpy(strings[stringsrow], (*token)->lexema);
+			stringsrow++;
 		}
 		
 		}
@@ -531,12 +538,16 @@ int FactorAnalyzer(Token** token, char* currentchar, Token* identificador){
 		//Se o token for um numero
 		if(!strcmp((*token)->simbolo,"snumero")){
 			(*token) = lexical(currentchar);
+			strcpy(strings[stringsrow], (*token)->lexema);
+			stringsrow++;
 		}
 		//Se nao for um numero
 		else{
 			//se for uma negacao
 			if(!strcmp((*token)->simbolo,"snao")){
 				(*token) = lexical(currentchar);
+				strcpy(strings[stringsrow], (*token)->lexema);
+				stringsrow++;
 				FactorAnalyzer(token,currentchar,identificador);
 			}
 			//se nao for uma negacao
@@ -544,10 +555,14 @@ int FactorAnalyzer(Token** token, char* currentchar, Token* identificador){
 				//Se for sabre parenteses
 				if(!strcmp((*token)->simbolo, "sabre_parenteses")){
 					(*token) = lexical(currentchar);
+					strcpy(strings[stringsrow], (*token)->lexema);
+					stringsrow++;
 					PhraseAnalyzer(token,currentchar,identificador);
 					//Verifica se fecha parenteses
 					if(!strcmp((*token)->simbolo, "sfecha_parenteses")){
 						(*token) = lexical(currentchar);
+						strcpy(strings[stringsrow], (*token)->lexema);
+						stringsrow++;
 					}
 					//Se nao encontrar fecha parenteses
 					else{
@@ -559,6 +574,8 @@ int FactorAnalyzer(Token** token, char* currentchar, Token* identificador){
 					//Se for verdadeiro ou falso
 					if(!strcmp((*token)->lexema,"verdadeiro") || !strcmp((*token)->lexema,"falso")){
 						(*token) = lexical(currentchar);
+						strcpy(strings[stringsrow], (*token)->lexema);
+						stringsrow++;
 					}
 					//Se nao for verdadeiro nem falso
 					else{
@@ -577,6 +594,8 @@ int WordAnalyzer(Token** token, char* currentchar, Token* identificador){
 	FactorAnalyzer(token,currentchar,identificador);
 	while(!strcmp((*token)->simbolo,"smult") || !strcmp((*token)->simbolo,"sdiv") || !strcmp((*token)->simbolo,"se")){
 		(*token) = lexical(currentchar);
+		strcpy(strings[stringsrow], (*token)->lexema);
+		stringsrow++;
 		FactorAnalyzer(token,currentchar,identificador);
 	}
 	return 0;
@@ -587,10 +606,14 @@ int SimplePhraseAnalyzer(Token** token, char* currentchar, Token* identificador)
 	//Se for mais ou menos
 	if(!strcmp((*token)->simbolo,"smais") || !strcmp((*token)->simbolo,"smenos")){
 		(*token) = lexical(currentchar);
+		strcpy(strings[stringsrow], (*token)->lexema);
+		stringsrow++;
 	}
 	WordAnalyzer(token,currentchar,identificador);
 	while(!strcmp((*token)->simbolo,"smais") || !strcmp((*token)->simbolo,"smenos") || !strcmp((*token)->simbolo,"sou")){
 		(*token) = lexical(currentchar);
+		strcpy(strings[stringsrow], (*token)->lexema);
+		stringsrow++;
 		WordAnalyzer(token,currentchar,identificador);
 	}
 	return 0;
@@ -598,9 +621,13 @@ int SimplePhraseAnalyzer(Token** token, char* currentchar, Token* identificador)
 
 //Analisa expressao
 int PhraseAnalyzer(Token** token, char* currentchar, Token* identificador){
+	strcpy(strings[stringsrow], (*token)->lexema);
+	stringsrow++;
 	SimplePhraseAnalyzer(token,currentchar,identificador);
 	if(!strcmp((*token)->simbolo,"smaior") || !strcmp((*token)->simbolo,"smaiorig") || !strcmp((*token)->simbolo,"sig") || !strcmp((*token)->simbolo,"smenor") || !strcmp((*token)->simbolo,"smenorig") || !strcmp((*token)->simbolo,"sdif")){
 		(*token) = lexical(currentchar);
+		strcpy(strings[stringsrow], (*token)->lexema);
+		stringsrow++;
 		SimplePhraseAnalyzer(token,currentchar,identificador);
 	}
 	return 0;
@@ -608,6 +635,7 @@ int PhraseAnalyzer(Token** token, char* currentchar, Token* identificador){
 
 //Analisa atribuicao
 int AttAnalyzer(Token** token, char* currentchar, Token* identificador){
+	int i;
 	identifier* check;
 	check = Consultstack(identificador->lexema,topo);
 	if (check == NULL){
@@ -618,6 +646,11 @@ int AttAnalyzer(Token** token, char* currentchar, Token* identificador){
 	
 	(*token) = lexical(currentchar);
 	PhraseAnalyzer(token,currentchar,identificador);
+	stringsrow--;
+	for(i = 0; i < stringsrow; i++){
+		puts(strings[i]);
+	}
+	stringsrow = 0;
 	}
 	//Se nao foi declarado
 	else{
@@ -668,8 +701,14 @@ int AnalyzeAttChProcedure(Token** token, char* currentchar){
 
 //Analisa "se"
 int Analyzeif(Token** token, char* currentchar){
+	int i;
 	(*token) = lexical(currentchar);
 	PhraseAnalyzer(token,currentchar,NULL);
+	stringsrow--;
+	for(i = 0; i < stringsrow; i++){
+		puts(strings[i]);
+	}
+	stringsrow = 0;
 	//Se for entao
 	if(!strcmp((*token)->simbolo,"sentao")){
 		(*token) = lexical(currentchar);
@@ -689,8 +728,14 @@ int Analyzeif(Token** token, char* currentchar){
 
 //Analisa comando "enquanto"
 int Analyzewhile(Token** token, char* currentchar){
+	int i;
 	(*token) =lexical(currentchar);
 	PhraseAnalyzer(token,currentchar,NULL);
+	stringsrow--;
+	for(i = 0; i < stringsrow; i++){
+		puts(strings[i]);
+	}
+	stringsrow = 0;
 	//Se for faca
 	if(!strcmp((*token)->simbolo,"sfaca")){
 		(*token) = lexical(currentchar);
