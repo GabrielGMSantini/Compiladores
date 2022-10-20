@@ -3,7 +3,7 @@
 #include <string.h>
 typedef struct identifier{
 	char nome[31];
-	char escopo; //Escolhido pois tem só um Byte
+	char escopo; //Escolhido pois tem sÃ³ um Byte
 	char tipo[31];
 	int memoria;
 }identifier;
@@ -36,6 +36,18 @@ int Push(stacknode** topo, char* nome, char escopo, char* tipo, int memoria){
 	}
 	return 1;
 }
+
+//Desempilha o identificador do topo da pilha
+identifier* Pop(stacknode** topo){
+	stacknode * novotopo = (stacknode*)malloc(sizeof(stacknode));
+	identifier * aux = (identifier*)malloc(sizeof(identifier));
+	*aux = (*topo)->identificador;
+	novotopo = (*topo)->next;
+	
+	*topo = novotopo;
+	return aux;
+}
+
 //Printa a pilha inteira
 int Printstack(stacknode* topo){
 	while(topo != NULL){
@@ -74,7 +86,7 @@ identifier* Consultstack(char* nome, stacknode* topo){
 	return &(topo->identificador);
 }
 
-//Procura uma variável cujo nome bate com o nome passado no escopo atual
+//Procura uma variÃ¡vel cujo nome bate com o nome passado no escopo atual
 identifier* DuplicvarSearch(char* nome, stacknode* topo){
 	//Ve no escopo da variavel se existe outra variavel ou 
 	while(topo != NULL && (strcmp(topo->identificador.nome,nome)) && topo->identificador.escopo == 0){
@@ -151,7 +163,7 @@ identifier* DuplicfuncSearch(char* nome, stacknode* topo){
 	return &(topo->identificador);
 }
 
-//Coloca o tipo definido em todas as variáveis cujo tipo atual eh "variavel"
+//Coloca o tipo definido em todas as variÃ¡veis cujo tipo atual eh "variavel"
 int Identifytype(char* tipo, stacknode** topo){
 	stacknode* topobuf = *topo;
 	while((*topo)!= NULL){
@@ -173,6 +185,7 @@ int Getoff(stacknode** topo){
 	}
 	return 0;
 }
+
 /*
 Testes feitos:
 	Push(&topo,"oi",0,"tipooi",1234154);
