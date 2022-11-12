@@ -19,9 +19,11 @@ char lexvetglobal[31];
 
 stacknode* topo;
 
+//Para a analise de expressao
 char strings[100][100];
 int stringsrow = 0;
-
+identifier idlist[100];
+int idcounter;
 //-------------------------------lexico-----------------------------------------------------
 
 // retorna um token com o lexema e simbolo definidos
@@ -62,7 +64,7 @@ Token* ProcessWord(char *currentchar) {
     *currentchar = fgetc(fptr);
   }
   lexvetglobal[size] = '\0';
-  // Dependendo do lexema, identifica uma das possÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¾Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â­veis palavras reservadas
+  // Dependendo do lexema, identifica uma das possiveis palavras reservadas
   if (!strcmp(lexvetglobal, "programa") || !strcmp(lexvetglobal, "se") ||
       !strcmp(lexvetglobal, "entao") || !strcmp(lexvetglobal, "senao") ||
       !strcmp(lexvetglobal, "enquanto") || !strcmp(lexvetglobal, "faca") ||
@@ -646,10 +648,21 @@ int AttAnalyzer(Token** token, char* currentchar, Token* identificador){
 	
 	(*token) = lexical(currentchar);
 	PhraseAnalyzer(token,currentchar,identificador);
+	printf("linha : %d\n",currentrow);
 	stringsrow--;
+	printf("\ninfix: \n");
 	for(i = 0; i < stringsrow; i++){
 		puts(strings[i]);
 	}
+	printf("\nposfixa:\n");
+	posfix();
+	for(i = 0; i < idcounter; i++){
+		puts(idlist[i].nome);
+		puts(idlist[i].tipo);
+		printf("\n");
+	}
+	printf("\n\n");
+	idcounter = 0;
 	stringsrow = 0;
 	}
 	//Se nao foi declarado
@@ -704,10 +717,21 @@ int Analyzeif(Token** token, char* currentchar){
 	int i;
 	(*token) = lexical(currentchar);
 	PhraseAnalyzer(token,currentchar,NULL);
+	printf("linha : %d\n",currentrow);
 	stringsrow--;
+	printf("\ninfix: \n");
 	for(i = 0; i < stringsrow; i++){
 		puts(strings[i]);
 	}
+	printf("\nposfixa:\n");
+	posfix();
+	for(i = 0; i < idcounter; i++){
+		puts(idlist[i].nome);
+		puts(idlist[i].tipo);
+		printf("\n");
+	}
+	printf("\n\n");
+	idcounter = 0;
 	stringsrow = 0;
 	//Se for entao
 	if(!strcmp((*token)->simbolo,"sentao")){
@@ -731,10 +755,21 @@ int Analyzewhile(Token** token, char* currentchar){
 	int i;
 	(*token) =lexical(currentchar);
 	PhraseAnalyzer(token,currentchar,NULL);
+	printf("linha : %d\n",currentrow);
 	stringsrow--;
+	printf("\ninfix: \n");
 	for(i = 0; i < stringsrow; i++){
 		puts(strings[i]);
 	}
+	printf("\nposfixa:\n");
+	posfix();
+	for(i = 0; i < idcounter; i++){
+		puts(idlist[i].nome);
+		puts(idlist[i].tipo);
+		printf("\n");
+	}
+	printf("\n\n");
+	idcounter = 0;
 	stringsrow = 0;
 	//Se for faca
 	if(!strcmp((*token)->simbolo,"sfaca")){
@@ -963,6 +998,243 @@ int Parser(){
 	}
 	return 0;
 }
+
+//--------------------------Auxilio------------------------------------------------------
+
+int posfix(){
+	stacknode* aux = NULL;
+	int ids = 0;
+	int strcounter = 0;
+	if(!strcmp(strings[0],"-") || !strcmp(strings[0],"+")){
+		Push(&aux,strings[0],0,"u",0);
+		strcounter++;
+	}	
+	for(;strcounter<stringsrow;strcounter++){
+		//Se for variavel ou numero
+		if(isalnum(strings[strcounter][0]) && strcmp(strings[strcounter],"div")  && strcmp(strings[strcounter],"e") && strcmp(strings[strcounter],"ou")  && strcmp(strings[strcounter],"nao")){
+			if(isdigit(strings[strcounter][0])){
+				idlist[ids].escopo = 0;
+				idlist[ids].memoria = 0;
+				strcpy(idlist[ids].nome,strings[strcounter]);
+				strcpy(idlist[ids].tipo,"snumero");
+				ids++;
+			}
+			else{
+				identifier* auxid;
+				auxid = Consultstack(strings[strcounter],topo);
+				idlist[ids].escopo = auxid->escopo;
+				idlist[ids].memoria = auxid->memoria;
+				strcpy(idlist[ids].nome,strings[strcounter]);
+				strcpy(idlist[ids].tipo,auxid->tipo);
+				ids++;
+			}
+		}
+		else{
+			//Se for abre parenteses
+			if(!strcmp(strings[strcounter],"(")){
+				Push(&aux,strings[strcounter],0,"sabre_parenteses",strcounter);
+				strcounter++;
+				if(!strcmp(strings[strcounter],"+") || !strcmp(strings[strcounter],"-")){
+					Push(&aux,strings[strcounter],0,"u",0);
+				}
+				else{
+					strcounter--;
+				}
+			}
+			else{
+			//Se for fecha parenteses
+				if(!strcmp(strings[strcounter],")")){
+					identifier* auxid;
+					auxid = Pop(&aux);
+					
+					while(strcmp(auxid->tipo,"sabre_parenteses")){
+						idlist[ids] = (*auxid);
+						ids++;
+						auxid = Pop(&aux);
+					}
+				}
+				//Se nao for nenhum dos acima, vai ser operador
+				else{
+					if(!strcmp(strings[strcounter],"*") || !strcmp(strings[strcounter],"div")){
+						identifier* auxid;
+						if(aux!=NULL){
+							auxid = Pop(&aux);
+							while(aux!=NULL && (!strcmp(auxid->tipo,"u") || !strcmp(auxid->tipo,"smult") || !strcmp(auxid->tipo,"sdiv"))){
+								idlist[ids] = (*auxid);
+								ids++;
+								auxid = Pop(&aux);
+							}
+							Push(&aux,auxid->nome,0,auxid->tipo,auxid->memoria);
+							if(!strcmp(strings[strcounter],"*")){
+								Push(&aux,strings[strcounter],0,"smult",strcounter);
+							}
+							else{
+								Push(&aux,strings[strcounter],0,"sdiv",strcounter);
+							}
+						}
+						else{
+							if(!strcmp(strings[strcounter],"*")){
+								Push(&aux,strings[strcounter],0,"smult",strcounter);
+							}
+							else{
+								Push(&aux,strings[strcounter],0,"sdiv",strcounter);
+							}
+						}
+					}
+					else{
+						//Se for mais ou menos
+						if(!strcmp(strings[strcounter],"+") || !strcmp(strings[strcounter],"-")){
+							identifier* auxid;
+							if(aux != NULL){
+							auxid = Pop(&aux);
+							while(aux!=NULL && (!strcmp(auxid->tipo,"u") || !strcmp(auxid->tipo,"smult") || !strcmp(auxid->tipo,"sdiv") || !strcmp(auxid->tipo,"smais") || !strcmp(auxid->tipo,"smenos"))){
+								idlist[ids] = (*auxid);
+								ids++;
+								auxid = Pop(&aux);
+							}
+							Push(&aux,auxid->nome,0,auxid->tipo,auxid->memoria);
+							if(!strcmp(strings[strcounter],"+")){
+								Push(&aux,strings[strcounter],0,"smais",strcounter);
+							}
+							else{
+								Push(&aux,strings[strcounter],0,"smenos",strcounter);
+							}	
+							}
+							else{
+								if(!strcmp(strings[strcounter],"+")){
+								Push(&aux,strings[strcounter],0,"smais",strcounter);
+								}
+								else{
+								Push(&aux,strings[strcounter],0,"smenos",strcounter);
+								}
+							}
+						}
+						else{
+							//Se for relacional
+							if(!strcmp(strings[strcounter],"<") || !strcmp(strings[strcounter],"<=")|| !strcmp(strings[strcounter],">")|| !strcmp(strings[strcounter],">=")|| !strcmp(strings[strcounter],"=")|| !strcmp(strings[strcounter],"!=")){
+								identifier* auxid;
+								if(aux!=NULL){
+									auxid = Pop(&aux);
+									while(aux!=NULL && (!strcmp(auxid->tipo,"u") || !strcmp(auxid->tipo,"smult") || !strcmp(auxid->tipo,"sdiv") || !strcmp(auxid->tipo,"smais") || !strcmp(auxid->tipo,"smenos") || !strcmp(auxid->tipo,"smaior")|| !strcmp(auxid->tipo,"smaiorig")|| !strcmp(auxid->tipo,"sig")|| !strcmp(auxid->tipo,"smenor")|| !strcmp(auxid->tipo,"smenorig")|| !strcmp(auxid->tipo,"sdif"))){
+										idlist[ids] = (*auxid);
+										ids++;
+										auxid = Pop(&aux);
+									}
+									Push(&aux,auxid->nome,0,auxid->tipo,auxid->memoria);
+									if(!strcmp(strings[strcounter],"<")){
+										Push(&aux,strings[strcounter],0,"smenor",strcounter);
+									}
+									else{
+										if(!strcmp(strings[strcounter],"<=")){
+											Push(&aux,strings[strcounter],0,"smenorig",strcounter);
+										}
+										else{
+											if(!strcmp(strings[strcounter],">")){
+												Push(&aux,strings[strcounter],0,"smaior",strcounter);
+											}
+											else{
+												if(!strcmp(strings[strcounter],">=")){
+													Push(&aux,strings[strcounter],0,"smaiorig",strcounter);
+												}
+												else{
+													if(!strcmp(strings[strcounter],"=")){
+														Push(&aux,strings[strcounter],0,"sig",strcounter);
+													}
+													else{
+														Push(&aux,strings[strcounter],0,"sdif",strcounter);
+
+													}
+												}			
+											}
+										}
+									}
+								}
+								else{
+									if(!strcmp(strings[strcounter],"<")){
+										Push(&aux,strings[strcounter],0,"smenor",strcounter);
+									}
+									else{
+										if(!strcmp(strings[strcounter],"<=")){
+											Push(&aux,strings[strcounter],0,"smenorig",strcounter);
+										}
+										else{
+											if(!strcmp(strings[strcounter],">")){
+												Push(&aux,strings[strcounter],0,"smaior",strcounter);
+											}
+											else{
+												if(!strcmp(strings[strcounter],">=")){
+													Push(&aux,strings[strcounter],0,"smaiorig",strcounter);
+												}
+												else{
+													if(!strcmp(strings[strcounter],"=")){
+														Push(&aux,strings[strcounter],0,"sig",strcounter);
+													}
+													else{
+														Push(&aux,strings[strcounter],0,"sdif",strcounter);
+
+													}
+												}			
+											}
+										}
+									}	
+								}
+							}
+							else{
+								//Se for logico
+								if(!strcmp(strings[strcounter],"e") || !strcmp(strings[strcounter],"ou")|| !strcmp(strings[strcounter],"nao")){
+									identifier* auxid;
+									if(aux!=NULL){
+										auxid = Pop(&aux);
+										while(aux!=NULL && (!strcmp(auxid->tipo,"u") || !strcmp(auxid->tipo,"smult") || !strcmp(auxid->tipo,"sdiv") || !strcmp(auxid->tipo,"smais") || !strcmp(auxid->tipo,"smenos") || !strcmp(auxid->tipo,"smaior")|| !strcmp(auxid->tipo,"smaiorig")|| !strcmp(auxid->tipo,"sig")|| !strcmp(auxid->tipo,"smenor")|| !strcmp(auxid->tipo,"smenorig")|| !strcmp(auxid->tipo,"sdif")|| !strcmp(auxid->tipo,"sou")|| !strcmp(auxid->tipo,"se")|| !strcmp(auxid->tipo,"snao"))){
+											idlist[ids] = (*auxid);
+											ids++;
+											auxid = Pop(&aux);
+										}
+										Push(&aux,auxid->nome,0,auxid->tipo,auxid->memoria);
+										if(!strcmp(strings[strcounter],"e")){
+											Push(&aux,strings[strcounter],0,"se",strcounter);
+										}
+										else{
+											if(!strcmp(strings[strcounter],"ou")){
+												Push(&aux,strings[strcounter],0,"sou",strcounter);
+											}
+											else{
+												Push(&aux,strings[strcounter],0,"snao",strcounter);
+											}
+										}
+									}
+									else{
+										if(!strcmp(strings[strcounter],"e")){
+											Push(&aux,strings[strcounter],0,"se",strcounter);
+										}
+										else{
+											if(!strcmp(strings[strcounter],"ou")){
+												Push(&aux,strings[strcounter],0,"sou",strcounter);
+											}
+											else{
+												Push(&aux,strings[strcounter],0,"snao",strcounter);
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+	}
+	identifier* auxid;
+	while(aux!=NULL){
+		auxid = Pop(&aux);
+		idlist[ids] = (*auxid);
+		ids++;
+	}
+	idcounter = ids;
+	return 0;
+}
+
 //----------------------------------------------------------------
 int main() {
   if ((fptr = fopen("./gera1.txt", "r")) == NULL) {
