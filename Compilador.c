@@ -1059,12 +1059,19 @@ int posfix(){
 						identifier* auxid;
 						if(aux!=NULL){
 							auxid = Pop(&aux);
-							while(aux!=NULL && (!strcmp(auxid->tipo,"u") || !strcmp(auxid->tipo,"smult") || !strcmp(auxid->tipo,"sdiv"))){
+							while(auxid!=NULL && (!strcmp(auxid->tipo,"u") || !strcmp(auxid->tipo,"smult") || !strcmp(auxid->tipo,"sdiv"))){
 								idlist[ids] = (*auxid);
 								ids++;
-								auxid = Pop(&aux);
+								if(aux !=NULL){
+									auxid = Pop(&aux);
+								}
+								else{
+									auxid=NULL;
+								}
 							}
-							Push(&aux,auxid->nome,0,auxid->tipo,auxid->memoria);
+							if(auxid){
+								Push(&aux,auxid->nome,0,auxid->tipo,auxid->memoria);
+							}
 							if(!strcmp(strings[strcounter],"*")){
 								Push(&aux,strings[strcounter],0,"smult",strcounter);
 							}
@@ -1087,12 +1094,19 @@ int posfix(){
 							identifier* auxid;
 							if(aux != NULL){
 							auxid = Pop(&aux);
-							while(aux!=NULL && (!strcmp(auxid->tipo,"u") || !strcmp(auxid->tipo,"smult") || !strcmp(auxid->tipo,"sdiv") || !strcmp(auxid->tipo,"smais") || !strcmp(auxid->tipo,"smenos"))){
+							while(auxid!=NULL && (!strcmp(auxid->tipo,"u") || !strcmp(auxid->tipo,"smult") || !strcmp(auxid->tipo,"sdiv") || !strcmp(auxid->tipo,"smais") || !strcmp(auxid->tipo,"smenos"))){
 								idlist[ids] = (*auxid);
 								ids++;
-								auxid = Pop(&aux);
+								if(aux !=NULL){
+									auxid = Pop(&aux);
+								}
+								else{
+									auxid=NULL;
+								}
 							}
-							Push(&aux,auxid->nome,0,auxid->tipo,auxid->memoria);
+							if(auxid){
+								Push(&aux,auxid->nome,0,auxid->tipo,auxid->memoria);
+							}
 							if(!strcmp(strings[strcounter],"+")){
 								Push(&aux,strings[strcounter],0,"smais",strcounter);
 							}
@@ -1115,12 +1129,19 @@ int posfix(){
 								identifier* auxid;
 								if(aux!=NULL){
 									auxid = Pop(&aux);
-									while(aux!=NULL && (!strcmp(auxid->tipo,"u") || !strcmp(auxid->tipo,"smult") || !strcmp(auxid->tipo,"sdiv") || !strcmp(auxid->tipo,"smais") || !strcmp(auxid->tipo,"smenos") || !strcmp(auxid->tipo,"smaior")|| !strcmp(auxid->tipo,"smaiorig")|| !strcmp(auxid->tipo,"sig")|| !strcmp(auxid->tipo,"smenor")|| !strcmp(auxid->tipo,"smenorig")|| !strcmp(auxid->tipo,"sdif"))){
+									while(auxid!=NULL && (!strcmp(auxid->tipo,"u") || !strcmp(auxid->tipo,"smult") || !strcmp(auxid->tipo,"sdiv") || !strcmp(auxid->tipo,"smais") || !strcmp(auxid->tipo,"smenos") || !strcmp(auxid->tipo,"smaior")|| !strcmp(auxid->tipo,"smaiorig")|| !strcmp(auxid->tipo,"sig")|| !strcmp(auxid->tipo,"smenor")|| !strcmp(auxid->tipo,"smenorig")|| !strcmp(auxid->tipo,"sdif"))){
 										idlist[ids] = (*auxid);
 										ids++;
-										auxid = Pop(&aux);
-									}
-									Push(&aux,auxid->nome,0,auxid->tipo,auxid->memoria);
+										if(aux !=NULL){
+											auxid = Pop(&aux);
+										}
+										else{
+											auxid=NULL;
+								        }
+							        }
+							        if(auxid){
+								        Push(&aux,auxid->nome,0,auxid->tipo,auxid->memoria);
+							        }
 									if(!strcmp(strings[strcounter],"<")){
 										Push(&aux,strings[strcounter],0,"smenor",strcounter);
 									}
@@ -1185,12 +1206,19 @@ int posfix(){
 									identifier* auxid;
 									if(aux!=NULL){
 										auxid = Pop(&aux);
-										while(aux!=NULL && (!strcmp(auxid->tipo,"u") || !strcmp(auxid->tipo,"smult") || !strcmp(auxid->tipo,"sdiv") || !strcmp(auxid->tipo,"smais") || !strcmp(auxid->tipo,"smenos") || !strcmp(auxid->tipo,"smaior")|| !strcmp(auxid->tipo,"smaiorig")|| !strcmp(auxid->tipo,"sig")|| !strcmp(auxid->tipo,"smenor")|| !strcmp(auxid->tipo,"smenorig")|| !strcmp(auxid->tipo,"sdif")|| !strcmp(auxid->tipo,"sou")|| !strcmp(auxid->tipo,"se")|| !strcmp(auxid->tipo,"snao"))){
+										while(auxid!=NULL && (!strcmp(auxid->tipo,"u") || !strcmp(auxid->tipo,"smult") || !strcmp(auxid->tipo,"sdiv") || !strcmp(auxid->tipo,"smais") || !strcmp(auxid->tipo,"smenos") || !strcmp(auxid->tipo,"smaior")|| !strcmp(auxid->tipo,"smaiorig")|| !strcmp(auxid->tipo,"sig")|| !strcmp(auxid->tipo,"smenor")|| !strcmp(auxid->tipo,"smenorig")|| !strcmp(auxid->tipo,"sdif")|| !strcmp(auxid->tipo,"sou")|| !strcmp(auxid->tipo,"se")|| !strcmp(auxid->tipo,"snao"))){
 											idlist[ids] = (*auxid);
 											ids++;
-											auxid = Pop(&aux);
+											if(aux !=NULL){
+												auxid = Pop(&aux);
+											}
+											else{
+												auxid=NULL;
+											}
 										}
-										Push(&aux,auxid->nome,0,auxid->tipo,auxid->memoria);
+										if(auxid){
+											Push(&aux,auxid->nome,0,auxid->tipo,auxid->memoria);
+										}
 										if(!strcmp(strings[strcounter],"e")){
 											Push(&aux,strings[strcounter],0,"se",strcounter);
 										}
@@ -1232,6 +1260,7 @@ int posfix(){
 		ids++;
 	}
 	idcounter = ids;
+	printf("%d\n\n",ids);
 	return 0;
 }
 
