@@ -139,6 +139,14 @@ void ThrowError(int errnum, int row, char* currentchar){
         	printf("ERRO: esperado \";\" apos fim de bloco de procedimento ou funcao na linha %d",row);
         	exit(30);
         	break;
+        case 31:
+        	printf("ERRO: tipos incompativeis na linha %d",row);
+        	exit(31);
+        	break;
+        case 32:
+        	printf("ERRO: utilizacao de operador nao unario para apenas um operando na linha %d",row);
+        	exit(32);
+        	break;
 		default:
 			printf("Erro: erro desconhecido na linha %d", row);
 			exit (404); 

@@ -662,6 +662,7 @@ int AttAnalyzer(Token** token, char* currentchar, Token* identificador){
 		printf("\n");
 	}
 	printf("\n\n");
+	ExpressionTypeAnalyzer();
 	idcounter = 0;
 	stringsrow = 0;
 	}
@@ -731,6 +732,7 @@ int Analyzeif(Token** token, char* currentchar){
 		printf("\n");
 	}
 	printf("\n\n");
+	ExpressionTypeAnalyzer();
 	idcounter = 0;
 	stringsrow = 0;
 	//Se for entao
@@ -769,6 +771,7 @@ int Analyzewhile(Token** token, char* currentchar){
 		printf("\n");
 	}
 	printf("\n\n");
+	ExpressionTypeAnalyzer();
 	idcounter = 0;
 	stringsrow = 0;
 	//Se for faca
@@ -999,7 +1002,7 @@ int Parser(){
 	return 0;
 }
 
-//--------------------------Auxilio------------------------------------------------------
+//--------------------------Auxilio-------------------------------
 
 int posfix(){
 	stacknode* aux = NULL;
@@ -1264,6 +1267,146 @@ int posfix(){
 	return 0;
 }
 
+int ExpressionTypeAnalyzer(){
+	int i;
+	stacknode* aux = NULL;
+	for(i=0;i<idcounter;i++){
+		//Se for numero, variavel ou funcao, coloca na pilha
+		if(!strcmp(idlist[i].tipo,"snumero") || !strcmp(idlist[i].tipo,"inteiro") || !strcmp(idlist[i].tipo,"booleano") || !strcmp(idlist[i].tipo,"funcao inteiro") || !strcmp(idlist[i].tipo,"funcao booleano")){
+			Push(&aux,idlist[i].nome,idlist[i].escopo,idlist[i].tipo,idlist[i].memoria);
+		}
+		else{
+			//Se for operador aritmetico unario
+			if(!strcmp(idlist[i].tipo,"u")){
+				if(aux != NULL){
+					identifier* auxid;
+					auxid = Pop(&aux);
+					if(!strcmp(auxid->tipo,"inteiro") || !strcmp(auxid->tipo,"funcao inteiro") || !strcmp(auxid->tipo,"snumero")){
+						Push(&aux,auxid->nome,auxid->escopo,auxid->tipo,auxid->memoria);
+					}
+					else{
+						ThrowError(31,currentrow,NULL);
+					}
+				}
+				else{
+					ThrowError(404,currentrow,NULL);
+				}
+			}
+			else{
+				//Se for operador aritmetico
+				if(!strcmp(idlist[i].tipo,"smais") || !strcmp(idlist[i].tipo,"smenos") || !strcmp(idlist[i].tipo,"smult") || !strcmp(idlist[i].tipo,"sdiv")){
+					if(aux!= NULL){
+						identifier* auxid;
+						auxid = Pop(&aux);
+						if(aux != NULL){
+							if(!strcmp(auxid->tipo,"inteiro") || !strcmp(auxid->tipo,"funcao inteiro") || !strcmp(auxid->tipo,"snumero")){
+								auxid = Pop(&aux);
+								if(!strcmp(auxid->tipo,"inteiro") || !strcmp(auxid->tipo,"funcao inteiro") || !strcmp(auxid->tipo,"snumero")){
+									Push(&aux,"op",0,"inteiro",0);
+								}
+								else{
+									ThrowError(31,currentrow,NULL);
+								}
+							}
+							else{
+								ThrowError(31,currentrow,NULL);
+							}
+						}
+						else{
+							ThrowError(32,currentrow,NULL);
+						}
+					}
+					else{
+						ThrowError(404,currentrow,NULL);
+					}
+				}
+				else{
+					//Se for operador relacional
+					if(!strcmp(idlist[i].tipo,"smenor") || !strcmp(idlist[i].tipo,"smenorig")|| !strcmp(idlist[i].tipo,"smaior")|| !strcmp(idlist[i].tipo,"smaiorig")|| !strcmp(idlist[i].tipo,"sig")|| !strcmp(idlist[i].tipo,"sdif")){
+						
+						if(aux!= NULL){
+							identifier* auxid;
+							auxid = Pop(&aux);
+							if(aux != NULL){
+								if(!strcmp(auxid->tipo,"inteiro") || !strcmp(auxid->tipo,"funcao inteiro") || !strcmp(auxid->tipo,"snumero")){
+									auxid = Pop(&aux);
+									if(!strcmp(auxid->tipo,"inteiro") || !strcmp(auxid->tipo,"funcao inteiro") || !strcmp(auxid->tipo,"snumero")){
+										Push(&aux,"op",0,"booleano",0);
+									}
+									else{
+										ThrowError(31,currentrow,NULL);
+									}
+								}
+								else{
+									ThrowError(31,currentrow,NULL);
+								}
+							}
+							else{
+								ThrowError(32,currentrow,NULL);
+							}
+						}
+						else{
+							ThrowError(404,currentrow,NULL);
+						}
+					}
+					else{
+						//se for nao
+						if(!strcmp(idlist[i].tipo,"snao")){
+							if(aux != NULL){
+								identifier* auxid;
+								auxid = Pop(&aux);
+								if(!strcmp(auxid->tipo,"booleano") || !strcmp(auxid->tipo,"funcao booleano")){
+									Push(&aux,auxid->nome,auxid->escopo,auxid->tipo,auxid->memoria);
+								}	
+								else{
+									ThrowError(31,currentrow,NULL);
+								}
+							}
+							else{
+								ThrowError(404,currentrow,NULL);
+							}
+						}
+						else{
+							//Se nao for nenhum dos anteriores, eh "se" ou "ou"
+							if(aux!= NULL){
+								identifier* auxid;
+								auxid = Pop(&aux);
+								if(aux != NULL){
+									if(!strcmp(auxid->tipo,"booleano") || !strcmp(auxid->tipo,"funcao booleano")){
+										auxid = Pop(&aux);
+										if(!strcmp(auxid->tipo,"booleano") || !strcmp(auxid->tipo,"funcao booleano")){
+											Push(&aux,"op",0,"booleano",0);
+										}
+										else{
+											ThrowError(31,currentrow,NULL);
+										}
+									}
+									else{
+										ThrowError(31,currentrow,NULL);
+									}
+								}
+								else{
+									ThrowError(32,currentrow,NULL);
+								}
+							}
+							else{
+								ThrowError(404,currentrow,NULL);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	if(aux != NULL){
+		identifier* auxid;
+		auxid = Pop(&aux);
+		puts(auxid->nome);
+		puts(auxid->tipo);
+		printf("\n\n\n\n\n");
+	}
+return 0;
+}
 //----------------------------------------------------------------
 int main() {
   if ((fptr = fopen("./gera1.txt", "r")) == NULL) {
