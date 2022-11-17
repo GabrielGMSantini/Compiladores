@@ -262,7 +262,7 @@ int PrintToken(Token* Token){
 
 }
 
-//Ignora os espaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â§os, comentarios e quebras de linha
+//Ignora os espacos, comentarios e quebras de linha
 Token* lexical(char* currentchar){
 	
     while (((*currentchar) == '{' || isspace((*currentchar))) && (*currentchar)!= EOF) {
