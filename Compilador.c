@@ -10,14 +10,22 @@ typedef struct Token {
   char *simbolo;
 } Token;
 //-------------------------------declaracoes-------------------------------------------------
+//Ponteiro para o arquivo de entrada
+FILE* fptr;
+//Ponteiro para o arquivo de saida
+FILE* fptr2;
 
-FILE *fptr;
+int rotulo = 1;
 
+int memoria = 1;
 int currentrow = 1;
 
 char lexvetglobal[31];
 
 stacknode* topo;
+
+//Nome do arquivo de saida
+char saidaname[31];
 
 //Para a analise de expressao
 char strings[100][100];
@@ -319,15 +327,16 @@ int TypeAnalyzer(Token** token, char* currentchar){
 }
 
 //Analisa a declaracao das variavel que compartilham um tipo
-int VariableAnalyzer(Token** token,char* currentchar){
+int VariableAnalyzer(Token** token,char* currentchar, int* cont){
 	//Enquanto nao for encontrado ":"
 	do{
 		//Se for um identificador
 		if(!strcmp("sidentificador",(*token)->simbolo)){
-			//Se nÃƒÆ’Ã‚Â£o tiver duplicata
-			
+			//Se nao tiver duplicata
+			*cont = *cont + 1;
 			if(DuplicvarSearch((*token)->lexema,topo) == NULL){
-				Push(&topo, (*token)->lexema,0,"variavel",0);
+				Push(&topo, (*token)->lexema,0,"variavel",memoria);
+				memoria++;
 				(*token) = lexical(currentchar);
 				//Se apos a variavel for encontrada "," ou ":"
 				if(!strcmp("svirgula",(*token)->simbolo)
@@ -363,13 +372,16 @@ int VariableAnalyzer(Token** token,char* currentchar){
 //Analisa declaracao de variaveis
 int VarDecAnalyzer(Token** token,char* currentchar){
 	//Se for uma variavel
+	
 	if(!strcmp("svar",(*token)->simbolo)){
+		int cont = 0;
+		int maux = memoria;
 		(*token) = 	lexical(currentchar);
 		
 		//Se tiver um identificador apos a palavra reservada "var"
 		if(!strcmp("sidentificador",(*token)->simbolo)){
 			while(!strcmp("sidentificador",(*token)->simbolo)){
-				VariableAnalyzer(token,currentchar);
+				VariableAnalyzer(token,currentchar,&cont);
 				//Se apos o tipo da variavel for encontrado um ";"
 				if(!strcmp("sponto_virgula",(*token)->simbolo)){
 					(*token) = lexical(currentchar);
@@ -380,12 +392,29 @@ int VarDecAnalyzer(Token** token,char* currentchar){
 				}
 			}
 		}
-		
 		//Se nao tiver um identificador apos a palavra reservada "var"
 		else{
 			ThrowError(7,currentrow,NULL);
 		}
+		char aux[5] = "   \0";
+		itoa(maux,aux,10);
+		int i=0;
+		for(;i<5;i++){
+			if(!isdigit(aux[i]))
+				aux[i] = ' ';
+		}
+		char aux2[5] = "   \0";
+		itoa(cont,aux2,10);
+		for(i=0;i<5;i++){
+			printf("%c",aux[i]);
+			if(!isdigit(aux2[i]))
+				aux2[i] = ' ';
+		}
+		aux[4] = '\0';
+		aux2[4] = '\0';
+		Gera("    ","ALLOC   ",aux,aux2);
 	}
+	
 	return 0;
 }
 
@@ -398,7 +427,17 @@ int AnalyzeProcDeclaration(Token** token, char* currentchar){
 	if(!strcmp((*token)->simbolo, "sidentificador")){
 		//Se o procedimento nao foi declarado antes
 		if(Consultstack((*token)->lexema,topo) == NULL){
-			Push(&topo,(*token)->lexema,nivel,"procedimento",0);
+			Push(&topo,(*token)->lexema,nivel,"procedimento",rotulo);
+			char aux[5] = "   \0";
+			itoa(rotulo,aux,10);
+			int i=0;
+			for(;i<5;i++){
+				if(!isdigit(aux[i]))
+					aux[i] = ' ';
+			}
+			aux[4] = '\0';
+			Gera(aux,"NULL    ","    ","    ");
+			rotulo++;
 			(*token) = lexical(currentchar);
 			//Se o proximo token for ponto e virgula
 			if(!strcmp((*token)->simbolo,"sponto_virgula")){
@@ -419,7 +458,24 @@ int AnalyzeProcDeclaration(Token** token, char* currentchar){
 	else{
 		ThrowError(13,currentrow,NULL);
 	}
-	Getoff(&topo);
+	int cont = Getoff(&topo);
+	if(cont > 0){
+		char aux[5] = "    \0";
+		char aux2[5]= "    \0";
+		memoria = memoria - cont;
+		itoa(cont,aux,10);
+		itoa(memoria,aux2,10);
+		int i=0;
+		for(;i<5;i++){
+			if(!isdigit(aux[i]))
+				aux[i] = ' ';
+			if(!isdigit(aux2[i]))
+				aux2[i] = ' ';
+		}
+		aux[4] = '\0';
+		aux2[4] = '\0';
+		Gera("    ","DALLOC  ",aux2,aux);
+	}
 	return 0;
 }
 
@@ -431,7 +487,17 @@ int AnalyzeFuncDeclaration(Token** token, char* currentchar){
 	if(!strcmp((*token)->simbolo, "sidentificador")){
 		//Se a funcao nao foi declarada antes
 		if(Consultstack((*token)->lexema,topo) == NULL){
-			Push(&topo,(*token)->lexema,nivel,"",0);
+			Push(&topo,(*token)->lexema,nivel,"",rotulo);
+			char aux[5] = "   \0";
+			itoa(rotulo,aux,10);
+			int i=0;
+			for(;i<5;i++){
+				if(!isdigit(aux[i]))
+					aux[i] = ' ';
+			}
+			aux[4] = '\0';
+			Gera(aux,"NULL    ","    ","    ");
+			rotulo++;
 			(*token) = lexical(currentchar);
 			//Se for encontrado :
 			if(!strcmp((*token)->simbolo,"sdoispontos")){
@@ -475,12 +541,47 @@ int AnalyzeFuncDeclaration(Token** token, char* currentchar){
 	else{
 		ThrowError(14,currentrow,NULL);
 	}
-	Getoff(&topo);
+	Printstack(topo);
+	int cont = Getoff(&topo);
+	printf("%d\n\n",cont);
+	if(cont > 0){
+		char aux[5] = "    \0";
+		char aux2[5]= "    \0";
+		memoria = memoria - cont;
+		itoa(cont,aux,10);
+		itoa(memoria,aux2,10);
+		int i=0;
+		for(;i<5;i++){
+			if(!isdigit(aux[i]))
+				aux[i] = ' ';
+			if(!isdigit(aux2[i]))
+				aux2[i] = ' ';
+		}
+		aux[4] = '\0';
+		aux2[4] = '\0';
+		Gera("    ","DALLOC  ",aux2,aux);
+	}
 	return 0;
 }
 
 //Analisa declaracao de subrotinas
 int SubRoutineAnalyzer(Token** token, char* currentchar){
+	int auxrot,flag;
+	flag = 0;
+	if(!strcmp((*token)->simbolo,"sprocedimento") || !strcmp((*token)->simbolo,"sfuncao")){
+		auxrot = rotulo;
+		char aux[5];
+		itoa(rotulo,aux,10);
+		int i;
+		for(i=0;i<5;i++){
+			if(!isdigit(aux[i]))
+				aux[i] = ' ';
+		}
+		aux[4] = '\0';
+		Gera("    ","JMP     ",aux,"    ");
+		rotulo++;
+		flag = 1;
+	}
 	//Enquanto forem encontradas declaracoes de procedimentos ou funcoes
 	while(!strcmp((*token)->simbolo,"sprocedimento") || !strcmp((*token)->simbolo,"sfuncao")){
 		//Se for procedimento
@@ -498,6 +599,17 @@ int SubRoutineAnalyzer(Token** token, char* currentchar){
 		else{
 			ThrowError(30,currentrow,(*token)->lexema);
 		}
+	}
+	if(flag){
+		char aux[5];
+		itoa(auxrot,aux,10);
+		int i;
+		for(i=0;i<5;i++){
+			if(!isdigit(aux[i]))
+				aux[i] = ' ';
+		}
+		aux[4] = '\0';
+		Gera(aux,"NULL    ","    ","    ");
 	}
 	return 0;
 }
@@ -662,7 +774,18 @@ int AttAnalyzer(Token** token, char* currentchar, Token* identificador){
 		printf("\n");
 	}
 	printf("\n\n");
-	ExpressionTypeAnalyzer();
+	int aux;
+	aux = ExpressionTypeAnalyzer();
+	if(!strcmp(check->tipo,"inteiro")|| !strcmp(check->tipo,"funcao inteiro")){
+		if(aux != 1){
+			ThrowError(31,currentrow,NULL);
+		}
+	}
+	else{
+		if(aux != 2){
+			ThrowError(31,currentrow,NULL);
+		}
+	}
 	idcounter = 0;
 	stringsrow = 0;
 	}
@@ -732,7 +855,9 @@ int Analyzeif(Token** token, char* currentchar){
 		printf("\n");
 	}
 	printf("\n\n");
-	ExpressionTypeAnalyzer();
+	if(ExpressionTypeAnalyzer() != 2){
+		ThrowError(31,currentrow,NULL);
+	}
 	idcounter = 0;
 	stringsrow = 0;
 	//Se for entao
@@ -771,7 +896,10 @@ int Analyzewhile(Token** token, char* currentchar){
 		printf("\n");
 	}
 	printf("\n\n");
-	ExpressionTypeAnalyzer();
+	if(ExpressionTypeAnalyzer() != 2){
+		ThrowError(31,currentrow,NULL);
+	}
+	
 	idcounter = 0;
 	stringsrow = 0;
 	//Se for faca
@@ -794,15 +922,34 @@ int Analyzeread(Token** token,char* currentchar){
 		//Se for um identificador
 		if(!strcmp((*token)->simbolo,"sidentificador")){
 			//Se a variavel esta declarada
-			if(DuplicvarSearchFull((*token)->lexema,topo) != NULL){
-				(*token) = lexical(currentchar);
+			identifier* check = DuplicvarSearchFull((*token)->lexema,topo);
+			if(check != NULL){
+				//Se for inteiro
+				if(!strcmp(check->tipo,"inteiro")){
+					(*token) = lexical(currentchar);
+				
 				//Se encontrar um fecha parenteses
 				if(!strcmp((*token)->simbolo,"sfecha_parenteses")){
+					char aux[5] = "    \0";
+					itoa(check->memoria,aux,10);
+					int i;
+					for(i=0;i<5;i++){
+						if(!isdigit(aux[i]))
+							aux[i] = ' ';
+					}
+					aux[4] = '\0';
+					Gera("    ","RD      ","    ","    ");
+					Gera("    ","STR     ",aux,"    ");
 					(*token) = lexical(currentchar);
 				}
 				//Se nao encontrar ")"
 				else{
 					ThrowError(19,currentrow,(*token)->lexema);
+				}
+				}
+				//Se nao for inteiro
+				else{
+					ThrowError(31,currentrow,NULL);
 				}
 			}
 			//Se a variavel nao foi declarada
@@ -834,10 +981,20 @@ int Analyzewrite(Token** token, char* currentchar){
 			if(check == NULL){
 				ThrowError(18,currentrow,(*token)->lexema);
 			}
-			if(strcmp(check->tipo,"procedimento")){
+			if(!strcmp(check->tipo,"inteiro")){
 				(*token) = lexical(currentchar);
 				//Se encontrar um fecha parenteses
 				if(!strcmp((*token)->simbolo,"sfecha_parenteses")){
+					char aux[5] = "    \0";
+					itoa(check->memoria,aux,10);
+					int i;
+					for(i=0;i<5;i++){
+						if(!isdigit(aux[i]))
+							aux[i] = ' ';
+					}
+					aux[4] = '\0';
+					Gera("    ","LDV     ",aux,"    ");
+					Gera("    ","PRN     ","    ","    ");
 					(*token) = lexical(currentchar);
 				}
 				//Se nao encontrar ")"
@@ -847,7 +1004,7 @@ int Analyzewrite(Token** token, char* currentchar){
 			}
 			//Se a variavel ou funcao nao foi declarada
 			else{
-				ThrowError(18,currentrow,(*token)->lexema);
+				ThrowError(31,currentrow,(*token)->lexema);
 			}
 		}
 		//Se nao for um identificador
@@ -960,9 +1117,11 @@ int Parser(){
 	  	//Se declarar o identificador do programa
 		if(!strcmp("sidentificador",token->simbolo)){
 	  		Push(&topo,token->lexema,0,"nomedeprograma",0);
+	  		Gera("    ","START   ","    ","    ");
 	  		token = lexical(&currentchar);
 	  		//Se o proximo token for um ";"
 	  		if(!strcmp("sponto_virgula",token->simbolo)){
+	  			Gera("    ","ALLOC   ","0   ","1    ");
 				BlockAnalyzer(&token,&currentchar);
 				//Se o arquivo tiver acabado sem ponto final
 				if(!strcmp(token->simbolo,"serro")){
@@ -973,6 +1132,26 @@ int Parser(){
 					token = lexical(&currentchar);
 					//Se for soh comentario ou fim do arquivo
 					if(currentchar == NULL || currentchar == EOF){
+						int cont = Getoff(&topo);
+						printf("%d\n\n",cont);
+						if(cont > 0){
+							char aux[5] = "    \0";
+							char aux2[5]= "    \0";
+							memoria = memoria - cont;
+							itoa(cont,aux,10);
+							itoa(memoria,aux2,10);
+							int i=0;
+							for(;i<5;i++){
+								if(!isdigit(aux[i]))
+									aux[i] = ' ';
+								if(!isdigit(aux2[i]))
+									aux2[i] = ' ';
+							}
+							aux[4] = '\0';
+							aux2[4] = '\0';
+							Gera("    ","DALLOC  ",aux2,aux);
+						}
+						Gera("    ","DALLOC  ","0   ","1   ");
 						printf("Compilacao bem sucedida\n\nTabela de Simbolos:\n");
 					}
 					//Se ainda tiver codigo
@@ -1267,6 +1446,7 @@ int posfix(){
 	return 0;
 }
 
+//Retorna 1 em inteiro e 2 em booleano
 int ExpressionTypeAnalyzer(){
 	int i;
 	stacknode* aux = NULL;
@@ -1367,7 +1547,7 @@ int ExpressionTypeAnalyzer(){
 							}
 						}
 						else{
-							//Se nao for nenhum dos anteriores, eh "se" ou "ou"
+							//Se nao for nenhum dos anteriores, eh "e" ou "ou"
 							if(aux!= NULL){
 								identifier* auxid;
 								auxid = Pop(&aux);
@@ -1401,20 +1581,44 @@ int ExpressionTypeAnalyzer(){
 	if(aux != NULL){
 		identifier* auxid;
 		auxid = Pop(&aux);
-		puts(auxid->nome);
-		puts(auxid->tipo);
-		printf("\n\n\n\n\n");
+		if(!strcmp(auxid->tipo,"inteiro") || !strcmp(auxid->tipo,"funcao inteiro")){
+			return 1;
+		}
+		else{
+			return 2;
+		}
 	}
+
 return 0;
 }
+
+int Gera(char* rotulo, char* comando, char* par1, char* par2){
+	puts(par2);
+	fprintf(fptr2, rotulo);
+	fprintf(fptr2, comando);
+	fprintf(fptr2, par1);
+	fprintf(fptr2, par2);
+	fprintf(fptr2,"\n");
+	return 0;
+}
+
 //----------------------------------------------------------------
 int main() {
   if ((fptr = fopen("./gera1.txt", "r")) == NULL) {
     printf("Deu ruim!!!");
     exit(1);
   }
+  printf("Digite o nome do arquivo de saida: ");
+  gets(saidaname);
+  strcat(saidaname,".obj");
+  
+   if ((fptr2 = fopen(saidaname, "w")) == NULL) {
+    printf("Deu ruim!!!");
+    exit(1);
+  }
+  
   Parser(); 
-  Printstack(topo);
   fclose(fptr);
+  fclose(fptr2);
   return 0;
 }

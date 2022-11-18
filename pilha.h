@@ -86,7 +86,7 @@ identifier* Consultstack(char* nome, stacknode* topo){
 	return &(topo->identificador);
 }
 
-//Procura uma variÃ¡vel cujo nome bate com o nome passado no escopo atual
+//Procura uma variavel cujo nome bate com o nome passado no escopo atual
 identifier* DuplicvarSearch(char* nome, stacknode* topo){
 	//Ve no escopo da variavel se existe outra variavel ou 
 	while(topo != NULL && (strcmp(topo->identificador.nome,nome)) && topo->identificador.escopo == 0){
@@ -178,12 +178,19 @@ int Identifytype(char* tipo, stacknode** topo){
 
 //Quebra o galho atual
 int Getoff(stacknode** topo){
-	while((*topo)->identificador.escopo == 0){
+	int cont = 0;
+	while((*topo)->identificador.escopo == 0 && strcmp((*topo)->identificador.tipo,"nomedeprograma")){
 		stacknode* temp = (*topo);
+		if(temp!= NULL){
+			if(!strcmp(temp->identificador.tipo,"inteiro") || !strcmp(temp->identificador.tipo,"booleano")){
+				cont++;
+			}
+		}
 		(*topo) = (*topo)->next;
 		free(temp);
 	}
-	return 0;
+	(*topo)->identificador.escopo = 0;
+	return cont;
 }
 
 /*

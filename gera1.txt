@@ -8,10 +8,10 @@ var a,b,s: inteiro;
      z: booleano;                  
   procedimento ler;          
   inicio
-     leia (c);
+     leia (s);
      leia (a);
      s:= soma;                  
-     escreva (s);
+     escreva (a);
   fim;
   procedimento loop;         
   var x: inteiro;
