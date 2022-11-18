@@ -4,6 +4,7 @@
 #include <string.h>
 #include "pilha.h"
 #include "erro.h"
+
 // Estrutura que representa um no de uma lista ligada de Tokens
 typedef struct Token {
   char *lexema;
@@ -32,6 +33,8 @@ char strings[100][100];
 int stringsrow = 0;
 identifier idlist[100];
 int idcounter;
+
+int Gera(char*, char* , char* , char* );
 //-------------------------------lexico-----------------------------------------------------
 
 // retorna um token com o lexema e simbolo definidos
@@ -397,14 +400,14 @@ int VarDecAnalyzer(Token** token,char* currentchar){
 			ThrowError(7,currentrow,NULL);
 		}
 		char aux[5] = "   \0";
-		itoa(maux,aux,10);
+		sprintf(aux,"%d",maux);
 		int i=0;
 		for(;i<5;i++){
 			if(!isdigit(aux[i]))
 				aux[i] = ' ';
 		}
 		char aux2[5] = "   \0";
-		itoa(cont,aux2,10);
+		sprintf(aux2,"%d",cont);
 		for(i=0;i<5;i++){
 			printf("%c",aux[i]);
 			if(!isdigit(aux2[i]))
@@ -429,7 +432,7 @@ int AnalyzeProcDeclaration(Token** token, char* currentchar){
 		if(Consultstack((*token)->lexema,topo) == NULL){
 			Push(&topo,(*token)->lexema,nivel,"procedimento",rotulo);
 			char aux[5] = "   \0";
-			itoa(rotulo,aux,10);
+			sprintf(aux,"%d",rotulo);
 			int i=0;
 			for(;i<5;i++){
 				if(!isdigit(aux[i]))
@@ -463,8 +466,8 @@ int AnalyzeProcDeclaration(Token** token, char* currentchar){
 		char aux[5] = "    \0";
 		char aux2[5]= "    \0";
 		memoria = memoria - cont;
-		itoa(cont,aux,10);
-		itoa(memoria,aux2,10);
+		sprintf(aux,"%d",cont);
+		sprintf(aux2,"%d",memoria);
 		int i=0;
 		for(;i<5;i++){
 			if(!isdigit(aux[i]))
@@ -489,7 +492,7 @@ int AnalyzeFuncDeclaration(Token** token, char* currentchar){
 		if(Consultstack((*token)->lexema,topo) == NULL){
 			Push(&topo,(*token)->lexema,nivel,"",rotulo);
 			char aux[5] = "   \0";
-			itoa(rotulo,aux,10);
+			sprintf(aux,"%d",rotulo);
 			int i=0;
 			for(;i<5;i++){
 				if(!isdigit(aux[i]))
@@ -548,8 +551,8 @@ int AnalyzeFuncDeclaration(Token** token, char* currentchar){
 		char aux[5] = "    \0";
 		char aux2[5]= "    \0";
 		memoria = memoria - cont;
-		itoa(cont,aux,10);
-		itoa(memoria,aux2,10);
+		sprintf(aux,"%d",cont);
+		sprintf(aux2,"%d",memoria);
 		int i=0;
 		for(;i<5;i++){
 			if(!isdigit(aux[i]))
@@ -571,7 +574,7 @@ int SubRoutineAnalyzer(Token** token, char* currentchar){
 	if(!strcmp((*token)->simbolo,"sprocedimento") || !strcmp((*token)->simbolo,"sfuncao")){
 		auxrot = rotulo;
 		char aux[5];
-		itoa(rotulo,aux,10);
+		sprintf(aux,"%d",rotulo);
 		int i;
 		for(i=0;i<5;i++){
 			if(!isdigit(aux[i]))
@@ -602,7 +605,7 @@ int SubRoutineAnalyzer(Token** token, char* currentchar){
 	}
 	if(flag){
 		char aux[5];
-		itoa(auxrot,aux,10);
+		sprintf(aux,"%d",auxrot);
 		int i;
 		for(i=0;i<5;i++){
 			if(!isdigit(aux[i]))
@@ -931,7 +934,7 @@ int Analyzeread(Token** token,char* currentchar){
 				//Se encontrar um fecha parenteses
 				if(!strcmp((*token)->simbolo,"sfecha_parenteses")){
 					char aux[5] = "    \0";
-					itoa(check->memoria,aux,10);
+				    sprintf(aux,"%d",check->memoria);
 					int i;
 					for(i=0;i<5;i++){
 						if(!isdigit(aux[i]))
@@ -986,7 +989,7 @@ int Analyzewrite(Token** token, char* currentchar){
 				//Se encontrar um fecha parenteses
 				if(!strcmp((*token)->simbolo,"sfecha_parenteses")){
 					char aux[5] = "    \0";
-					itoa(check->memoria,aux,10);
+				    sprintf(aux,"%d",check->memoria);
 					int i;
 					for(i=0;i<5;i++){
 						if(!isdigit(aux[i]))
@@ -1138,8 +1141,8 @@ int Parser(){
 							char aux[5] = "    \0";
 							char aux2[5]= "    \0";
 							memoria = memoria - cont;
-							itoa(cont,aux,10);
-							itoa(memoria,aux2,10);
+							sprintf(aux,"%d",cont);
+							sprintf(aux2,"%d",memoria);
 							int i=0;
 							for(;i<5;i++){
 								if(!isdigit(aux[i]))
