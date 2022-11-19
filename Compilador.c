@@ -409,7 +409,6 @@ int VarDecAnalyzer(Token** token,char* currentchar){
 		char aux2[5] = "   \0";
 		sprintf(aux2,"%d",cont);
 		for(i=0;i<5;i++){
-			printf("%c",aux[i]);
 			if(!isdigit(aux2[i]))
 				aux2[i] = ' ';
 		}
@@ -479,6 +478,7 @@ int AnalyzeProcDeclaration(Token** token, char* currentchar){
 		aux2[4] = '\0';
 		Gera("    ","DALLOC  ",aux2,aux);
 	}
+	Gera("    ","RETURN  ","    ","    ");
 	return 0;
 }
 
@@ -544,9 +544,7 @@ int AnalyzeFuncDeclaration(Token** token, char* currentchar){
 	else{
 		ThrowError(14,currentrow,NULL);
 	}
-	Printstack(topo);
 	int cont = Getoff(&topo);
-	printf("%d\n\n",cont);
 	if(cont > 0){
 		char aux[5] = "    \0";
 		char aux2[5]= "    \0";
@@ -563,6 +561,7 @@ int AnalyzeFuncDeclaration(Token** token, char* currentchar){
 		aux[4] = '\0';
 		aux2[4] = '\0';
 		Gera("    ","DALLOC  ",aux2,aux);
+		Gera("    ","RETURN  ","    ","    ");
 	}
 	return 0;
 }
@@ -761,36 +760,52 @@ int AttAnalyzer(Token** token, char* currentchar, Token* identificador){
 	//Ve se foi declarado
 	if(strcmp(check->tipo,"procedimento")){
 	
-	(*token) = lexical(currentchar);
-	PhraseAnalyzer(token,currentchar,identificador);
-	printf("linha : %d\n",currentrow);
-	stringsrow--;
-	printf("\ninfix: \n");
-	for(i = 0; i < stringsrow; i++){
-		puts(strings[i]);
-	}
-	printf("\nposfixa:\n");
-	posfix();
-	for(i = 0; i < idcounter; i++){
-		puts(idlist[i].nome);
-		puts(idlist[i].tipo);
-		printf("\n");
-	}
-	printf("\n\n");
-	int aux;
-	aux = ExpressionTypeAnalyzer();
-	if(!strcmp(check->tipo,"inteiro")|| !strcmp(check->tipo,"funcao inteiro")){
-		if(aux != 1){
-			ThrowError(31,currentrow,NULL);
+		(*token) = lexical(currentchar);
+		PhraseAnalyzer(token,currentchar,identificador);
+		printf("linha : %d\n",currentrow);
+		stringsrow--;
+		printf("\ninfix: \n");
+		for(i = 0; i < stringsrow; i++){
+			puts(strings[i]);
 		}
-	}
-	else{
-		if(aux != 2){
-			ThrowError(31,currentrow,NULL);
+		printf("\nposfixa:\n");
+		posfix();
+		for(i = 0; i < idcounter; i++){
+			puts(idlist[i].nome);
+			puts(idlist[i].tipo);
+			printf("\n");
 		}
-	}
-	idcounter = 0;
-	stringsrow = 0;
+		printf("\n\n");
+		int aux;
+		aux = ExpressionTypeAnalyzer(); //a funcao retorna 1 se a expressao for inteira e 2 se for booleana
+		if(!strcmp(check->tipo,"inteiro")|| !strcmp(check->tipo,"funcao inteiro")){
+			if(aux != 1){
+				ThrowError(31,currentrow,NULL);
+			}
+		}
+		else{
+			if(aux != 2){
+				ThrowError(31,currentrow,NULL);
+			}
+		}
+		idcounter = 0;
+		stringsrow = 0;
+		//Se o tipo comecar com f, eh funcao
+		if(check->tipo[0] == 'f'){
+			Gera("    ","STR     ","0   ","    ");
+		}
+		//Eh variavel
+		else{
+			char aux[5];
+			sprintf(aux,"%d",check->memoria);
+			int i;
+			for(i=0;i<5;i++){
+				if(!isdigit(aux[i]))
+					aux[i] = ' ';
+			}
+			aux[4] = '\0';
+			Gera("    ","STR     ",aux,"    ");
+		}
 	}
 	//Se nao foi declarado
 	else{
@@ -808,7 +823,15 @@ int ProcedureAnalyzer (Token** token, char* currentchar, Token* identificador){
 	if(check != NULL){
 		//Se o identificador for funcao inteiro ou booleano
 		if(!strcmp(check->tipo,"procedimento")){
-			
+			int i;
+			char aux[5] = "    \0";
+			sprintf(aux,"%d",check->memoria);
+			for(i=0;i<5;i++){
+				if(!isdigit(aux[i]))
+					aux[i] = ' ';
+			}
+			aux[4] = '\0';
+			Gera("    ","CALL    ",aux,"    ");
 		}
 		else{
 			ThrowError(21,currentrow,identificador->lexema);
@@ -863,12 +886,33 @@ int Analyzeif(Token** token, char* currentchar){
 	}
 	idcounter = 0;
 	stringsrow = 0;
+	int flag = 0;
+	char aux[5] = "    \0";
+	char aux2[5] = "    \0";
+	sprintf(aux,"%d",rotulo);
+	for(i=0;i<5;i++){
+		if(!isdigit(aux[i]))
+			aux[i] = ' ';
+	}
+	aux[4] = '\0';
+	Gera("    ","JMPF    ",aux,"    ");
+	rotulo++;
 	//Se for entao
 	if(!strcmp((*token)->simbolo,"sentao")){
 		(*token) = lexical(currentchar);
 		AnalyzeSimpleCommand(token,currentchar);
 		//Se for senao
 		if(!strcmp((*token)->simbolo,"ssenao")){
+			flag = 1;
+			sprintf(aux2,"%d",rotulo);
+			for(i=0;i<5;i++){
+				if(!isdigit(aux2[i]))
+					aux2[i] = ' ';
+			}
+			aux2[4] = '\0';
+			Gera("    ","JMP     ",aux2,"    ");
+			rotulo++;
+			Gera(aux,"NULL    ","    ","    ");
 			(*token) = lexical(currentchar);
 			AnalyzeSimpleCommand(token,currentchar);
 		}
@@ -877,6 +921,12 @@ int Analyzeif(Token** token, char* currentchar){
 	else{
 		ThrowError(23,currentrow,(*token)->lexema);
 	}
+	if(flag == 1){
+		Gera(aux2,"NULL    ","    ","    ");
+	}
+	else{
+		Gera(aux,"NULL    ","    ","    ");
+	}
 	return 0;
 }
 
@@ -884,6 +934,16 @@ int Analyzeif(Token** token, char* currentchar){
 int Analyzewhile(Token** token, char* currentchar){
 	int i;
 	(*token) =lexical(currentchar);
+	char aux[5] = "    \0";
+	char aux2[5] = "    \0";
+	sprintf(aux,"%d",rotulo);
+	for(i=0;i<5;i++){
+		if(!isdigit(aux[i]))
+			aux[i] = ' ';
+	}
+	aux[4] = '\0';
+	Gera(aux,"NULL    ","    ","    ");
+	rotulo++;
 	PhraseAnalyzer(token,currentchar,NULL);
 	printf("linha : %d\n",currentrow);
 	stringsrow--;
@@ -905,10 +965,21 @@ int Analyzewhile(Token** token, char* currentchar){
 	
 	idcounter = 0;
 	stringsrow = 0;
+	
 	//Se for faca
 	if(!strcmp((*token)->simbolo,"sfaca")){
+		sprintf(aux2,"%d",rotulo);
+		for(i=0;i<5;i++){
+			if(!isdigit(aux2[i]))
+				aux2[i] = ' ';
+		}
+		aux2[4] = '\0';
+		rotulo++;
+		Gera("    ","JMPF    ",aux2,"    ");
 		(*token) = lexical(currentchar);
 		AnalyzeSimpleCommand(token,currentchar);
+		Gera("    ","JMP     ",aux,"    ");
+		Gera(aux2,"NULL    ","    ","    ");
 	}
 	else{
 		ThrowError(24,currentrow,(*token)->lexema);
@@ -1155,7 +1226,9 @@ int Parser(){
 							Gera("    ","DALLOC  ",aux2,aux);
 						}
 						Gera("    ","DALLOC  ","0   ","1   ");
-						printf("Compilacao bem sucedida\n\nTabela de Simbolos:\n");
+						Gera("    ","HLT     ","    ","    ");
+						
+						printf("Compilacao bem sucedida\n\n");
 					}
 					//Se ainda tiver codigo
 					else{
@@ -1457,10 +1530,49 @@ int ExpressionTypeAnalyzer(){
 		//Se for numero, variavel ou funcao, coloca na pilha
 		if(!strcmp(idlist[i].tipo,"snumero") || !strcmp(idlist[i].tipo,"inteiro") || !strcmp(idlist[i].tipo,"booleano") || !strcmp(idlist[i].tipo,"funcao inteiro") || !strcmp(idlist[i].tipo,"funcao booleano")){
 			Push(&aux,idlist[i].nome,idlist[i].escopo,idlist[i].tipo,idlist[i].memoria);
+			if(strcmp(idlist[i].tipo,"snumero")){
+				if(idlist[i].tipo[0] != 'f'){
+					char aux[5] = "    \0";
+					sprintf(aux,"%d",idlist[i].memoria);
+					int i;
+					for(i=0;i<5;i++){
+						if(!isdigit(aux[i]))
+							aux[i] = ' ';
+					}
+					aux[4] = '\0';
+					Gera("    ","LDV     ",aux,"    ");
+			    }
+			    else{
+			    	char aux[5] = "    \0";
+					sprintf(aux,"%d",idlist[i].memoria);
+					int i;
+					for(i=0;i<5;i++){
+						if(!isdigit(aux[i]))
+							aux[i] = ' ';
+					}
+					aux[4] = '\0';
+					Gera("    ","CALL    ",aux,"    ");
+			    	Gera("    ","LDV     ","0   ","    ");
+				}
+			}
+			else{
+				char aux[5] = "    \0";
+				int j;
+				strcpy(aux,idlist[i].nome);
+				for(j=0;j<5;j++){
+					if(!isdigit(aux[j])){
+						aux[j] = ' ';
+					}
+				}
+				aux[4] = '\0';
+				puts(aux);
+				Gera("    ","LDC     ",aux,"    ");
+			}
 		}
 		else{
 			//Se for operador aritmetico unario
 			if(!strcmp(idlist[i].tipo,"u")){
+				Gera("    ","INV     ","    ","    ");
 				if(aux != NULL){
 					identifier* auxid;
 					auxid = Pop(&aux);
@@ -1478,6 +1590,21 @@ int ExpressionTypeAnalyzer(){
 			else{
 				//Se for operador aritmetico
 				if(!strcmp(idlist[i].tipo,"smais") || !strcmp(idlist[i].tipo,"smenos") || !strcmp(idlist[i].tipo,"smult") || !strcmp(idlist[i].tipo,"sdiv")){
+					//Eh possivel separar o tipo da operacao observando apenas a terceira letra do tipo de cada uma
+					switch(idlist[i].tipo[2]){
+						case 'a':
+							Gera("    ","ADD     ","    ","    ");
+							break;
+						case 'e':
+							Gera("    ","SUB     ","    ","    ");
+							break;
+						case 'u':
+							Gera("    ","MULT    ","    ","    ");
+							break;
+						default:
+							Gera("    ","DIVI    ","    ","    ");
+							break;
+					}
 					if(aux!= NULL){
 						identifier* auxid;
 						auxid = Pop(&aux);
@@ -1506,7 +1633,38 @@ int ExpressionTypeAnalyzer(){
 				else{
 					//Se for operador relacional
 					if(!strcmp(idlist[i].tipo,"smenor") || !strcmp(idlist[i].tipo,"smenorig")|| !strcmp(idlist[i].tipo,"smaior")|| !strcmp(idlist[i].tipo,"smaiorig")|| !strcmp(idlist[i].tipo,"sig")|| !strcmp(idlist[i].tipo,"sdif")){
-						
+						//Se for a operacao de menor
+						if(!strcmp(idlist[i].tipo,"smenor")){
+							Gera("    ","CME     ","    ","    ");
+						}
+						else{
+							//Se for a operacao de menor ou igual
+							if(!strcmp(idlist[i].tipo,"smenorig")){
+								Gera("    ","CMEQ    ","    ","    ");
+							}
+							else{
+								//Se for a operacao de maior
+								if(!strcmp(idlist[i].tipo,"smaior")){
+									Gera("    ","CMA     ","    ","    ");
+								}
+								else{
+									//Se for a operacao de maior ou igual
+									if(!strcmp(idlist[i].tipo,"smaiorig")){
+										Gera("    ","CMAQ    ","    ","    ");
+									}
+									else{
+										//Se for a operacao de igual
+										if(!strcmp(idlist[i].tipo,"sig")){
+											Gera("    ","CEQ     ","    ","    ");
+										}
+										else{
+											//Se nao for nenhum dos anteriores, eh a operacao de diferente
+											Gera("    ","CDIF    ","    ","    ");
+										}
+									}
+								}
+							}
+						}
 						if(aux!= NULL){
 							identifier* auxid;
 							auxid = Pop(&aux);
@@ -1535,6 +1693,7 @@ int ExpressionTypeAnalyzer(){
 					else{
 						//se for nao
 						if(!strcmp(idlist[i].tipo,"snao")){
+							Gera("    ","NEG     ","    ","    ");
 							if(aux != NULL){
 								identifier* auxid;
 								auxid = Pop(&aux);
@@ -1551,6 +1710,12 @@ int ExpressionTypeAnalyzer(){
 						}
 						else{
 							//Se nao for nenhum dos anteriores, eh "e" ou "ou"
+							if(!strcmp(idlist[i].tipo,"se")){
+								Gera("    ","AND     ","    ","    ");
+							}
+							else{
+								Gera("    ","OR      ","    ","    ");
+							}
 							if(aux!= NULL){
 								identifier* auxid;
 								auxid = Pop(&aux);
@@ -1584,7 +1749,7 @@ int ExpressionTypeAnalyzer(){
 	if(aux != NULL){
 		identifier* auxid;
 		auxid = Pop(&aux);
-		if(!strcmp(auxid->tipo,"inteiro") || !strcmp(auxid->tipo,"funcao inteiro")){
+		if(!strcmp(auxid->tipo,"inteiro") || !strcmp(auxid->tipo,"funcao inteiro") || !strcmp(auxid->tipo,"snumero")){
 			return 1;
 		}
 		else{
@@ -1596,7 +1761,6 @@ return 0;
 }
 
 int Gera(char* rotulo, char* comando, char* par1, char* par2){
-	puts(par2);
 	fprintf(fptr2, rotulo);
 	fprintf(fptr2, comando);
 	fprintf(fptr2, par1);
