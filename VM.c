@@ -6,7 +6,11 @@
 
 FILE* fptr;
 
-char program[100][26];
+char P[100][26];
+
+int M[200];
+int s;
+int i;
 
 int LoadFile(char* filename){
 	if ((fptr = fopen(filename, "r")) == NULL) {
@@ -19,12 +23,12 @@ int LoadFile(char* filename){
 	int c = 0;
 	while(currentchar != EOF){
 		if(currentchar == '\n'){
-			program[r][c] = '\0';
+			P[r][c] = '\0';
 			r++;
 			c=0;
 		}
 		else{
-			program[r][c] = currentchar;
+			P[r][c] = currentchar;
 			c++;
 		}
 		currentchar = fgetc(fptr);
@@ -32,15 +36,80 @@ int LoadFile(char* filename){
 	return r;
 }
 
-int main(int argc, char** argv){
-	int r = LoadFile("./t.obj");
-	int i=0;
-	for(;i<r;i++){
-		int j;
-		for(j=0;program[i][j]!='\0';j++){
-			printf("%c",program[i][j]);
-		}
-		printf("\n");
-	}	
+
+//Procura linha com rotulo
+int FetchLabel(int label){
+	char rotulo [5];
+	char comando [9];
+	int j,k;
+	k=0;
+	for(j=0;j<4;j++){
+		rotulo[j] = P[k][j];
+	}
+	rotulo[4] = '\0';
 	
+	for(j=0;j<8;j++){
+		comando[j] = P[k][j+4];	
+	}
+	comando[8] = '\0';
+	int flag = 0;
+	
+	while(strcmp(comando,"HLT     ") && atoi(rotulo) != label){
+		
+		k++;
+		for(j=0;j<4;j++){
+			rotulo[j] = P[k][j];
+		}
+		rotulo[4] = '\0';
+		
+		for(j=0;j<8;j++){
+			comando[j] = P[k][j+4];	
+		}
+		comando[8] = '\0';
+		
+		if(!strcmp(comando,"HLT     ")){
+			flag = 1;
+		}
+	}
+	if(flag){
+		return -1;
+	}
+	else{
+		return k;
+	}
+}
+
+//Executa o comando na linha definida
+int Exec(int l){
+	char rotulo [5];
+	char comando [9];
+	char param1 [5];
+	char param2 [5];
+	
+	int j;
+	for(j=0;j<4;j++){
+		rotulo[j] = P[l][j];
+		param1[j] = P[l][j+12];
+		param2[j] =	P[l][j+16];
+	}
+	rotulo[4] = '\0';
+	param1[4] = '\0';
+	param2[4] = '\0';
+	
+	for(j=0;j<8;j++){
+		comando[j] = P[l][j+4];	
+	}
+	comando[8] = '\0';
+	
+	return 0;	
+}
+
+
+int main(int argc, char** argv){
+	int r = LoadFile("./gera1.obj");
+	int j=0;
+	for(;j<r;j++){
+		puts(P[j]);
+	}
+	printf("%d",FetchLabel(2));
 }
