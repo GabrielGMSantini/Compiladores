@@ -189,6 +189,4 @@ int main(int argc, char** argv){
 	for(j=0;j<TAMANHO_DE_MEMORIA;j++){
 		M[j]=0;
 	}
-	Exec(0);
-	Exec(1);
 }
