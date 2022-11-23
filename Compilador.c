@@ -1259,6 +1259,7 @@ int Parser(){
 
 //--------------------------Auxilio-------------------------------
 
+//Transforma em posfixa
 int posfix(){
 	stacknode* aux = NULL;
 	int ids = 0;
