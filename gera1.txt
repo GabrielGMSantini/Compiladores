@@ -21,7 +21,7 @@ entao ler
 fim;
 inicio  {corpo da funcao soma}
 loop;
-soma:= c+a;
+soma:= +c+a;
 fim;
 inicio      {corpo principal}
 s:= soma;

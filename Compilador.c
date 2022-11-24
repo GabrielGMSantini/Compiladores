@@ -1573,7 +1573,9 @@ int ExpressionTypeAnalyzer(){
 		else{
 			//Se for operador aritmetico unario
 			if(!strcmp(idlist[i].tipo,"u")){
+                if(!strcmp(idlist[i].nome, "-")){
 				Gera("    ","INV     ","    ","    ");
+                }
 				if(aux != NULL){
 					identifier* auxid;
 					auxid = Pop(&aux);
