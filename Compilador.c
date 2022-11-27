@@ -1574,7 +1574,7 @@ int ExpressionTypeAnalyzer(){
 			//Se for operador aritmetico unario
 			if(!strcmp(idlist[i].tipo,"u")){
                 if(!strcmp(idlist[i].nome, "-")){
-				Gera("    ","INV     ","    ","    ");
+				    Gera("    ","INV     ","    ","    ");
                 }
 				if(aux != NULL){
 					identifier* auxid;
@@ -1773,22 +1773,27 @@ int Gera(char* rotulo, char* comando, char* par1, char* par2){
 }
 
 //----------------------------------------------------------------
-int main() {
-  if ((fptr = fopen("./gera1.txt", "r")) == NULL) {
+int main(int argc,char ** argv) {
+  if ((fptr = fopen(argv[1], "r")) == NULL) {
     printf("Deu ruim!!!");
     exit(1);
   }
-  printf("Digite o nome do arquivo de saida: ");
-  gets(saidaname);
+  strcpy(saidaname,argv[2]);
   strcat(saidaname,".obj");
   
-   if ((fptr2 = fopen(saidaname, "w")) == NULL) {
+  if ((fptr2 = fopen(saidaname, "w")) == NULL) {
     printf("Deu ruim!!!");
     exit(1);
   }
-  
+  FILE* flog;
+  if ((flog = fopen("log.txt", "w")) == NULL) {
+    printf("Deu ruim!!!");
+    exit(1);
+  }
   Parser(); 
+  fprintf(flog,"Compilacao bem sucedida\n");
   fclose(fptr);
   fclose(fptr2);
+  fclose(flog);
   return 0;
 }
