@@ -13,10 +13,12 @@ s:= soma;
 escreva (s);
 fim;
 procedimento loop;
-var x: inteiro;
+var x,c: inteiro;
+ y: booleano;
 inicio
 leia (x);   {para parar digite um valor maior que 9 }
-se (x < 10) e (x > 5)
+y:= x<10 e (x>5);
+se ((nao((a+(+c))<10)ou(((-a)+x)>5))e((c-x)=3))
 entao ler
 fim;
 inicio  {corpo da funcao soma}
