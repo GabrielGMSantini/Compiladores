@@ -672,8 +672,6 @@ int FactorAnalyzer(Token** token, char* currentchar, Token* identificador){
 				//Se for sabre parenteses
 				if(!strcmp((*token)->simbolo, "sabre_parenteses")){
 					(*token) = lexical(currentchar);
-					strcpy(strings[stringsrow], (*token)->lexema);
-					stringsrow++;
 					PhraseAnalyzer(token,currentchar,identificador);
 					//Verifica se fecha parenteses
 					if(!strcmp((*token)->simbolo, "sfecha_parenteses")){
@@ -793,7 +791,6 @@ int AttAnalyzer(Token** token, char* currentchar, Token* identificador){
 		stringsrow = 0;
 		//Se o tipo comecar com f, eh funcao
 		if(check->tipo[0] == 'f' && check->escopo == 'L'){
-             
             if(DuplicfuncSearch(check->nome,topo)){
 			    Gera("    ","STR     ","0   ","    ");
             }

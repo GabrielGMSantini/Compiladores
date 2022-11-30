@@ -16,12 +16,13 @@ procedimento loop;
 var x: inteiro;
 inicio
 leia (x);   {para parar digite um valor maior que 9 }
-se x < 10
+se (x < 10) e (x > 5)
 entao ler
 fim;
 inicio  {corpo da funcao soma}
 loop;
-soma:= c+a;
+soma:= c + a;
+escreva (a);
 fim;
 inicio      {corpo principal}
 s:= soma;

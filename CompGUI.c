@@ -78,7 +78,7 @@ static void click_compile (GtkButton* btn, gpointer used_data){
           exit(1);
         }
         char string[100];
-        fgets(string,50,flog);
+        fgets(string,100,flog);
         gtk_text_buffer_set_text (used_data, string, -1);        
         
     }
