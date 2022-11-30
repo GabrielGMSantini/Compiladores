@@ -158,7 +158,10 @@ identifier* DuplicfuncSearch(char* nome, stacknode* topo){
 		}
 	}
 	if(topo->identificador.escopo != 0){
-		return NULL;
+        if(strcmp(topo->identificador.nome,nome))
+		    return NULL;
+        else
+            return &(topo->identificador);  
 	}
 	return &(topo->identificador);
 }

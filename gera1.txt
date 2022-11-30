@@ -16,7 +16,7 @@ procedimento loop;
 var x: inteiro;
 inicio
 leia (x);   {para parar digite um valor maior que 9 }
-se x  < 10
+se x < 10
 entao ler
 fim;
 inicio  {corpo da funcao soma}

@@ -316,6 +316,7 @@ Token* lexical(char* currentchar){
 
 //---------------------------Sintatico----------------------------
 int BlockAnalyzer(Token**, char*);
+int CommandAnalyzer(Token** , char* );
 //Analisa o tipo da variavel
 int TypeAnalyzer(Token** token, char* currentchar){
 	//Se nao for booleano ou inteiro
@@ -758,7 +759,7 @@ int AttAnalyzer(Token** token, char* currentchar, Token* identificador){
 		ThrowError(18,currentrow,identificador->lexema);
 	}
 	//Ve se foi declarado
-	if(strcmp(check->tipo,"procedimento")){
+	if(strcmp(check->tipo,"procedimento") && strcmp(check->tipo,"nomedeprograma")){
 	
 		(*token) = lexical(currentchar);
 		PhraseAnalyzer(token,currentchar,identificador);
@@ -791,8 +792,11 @@ int AttAnalyzer(Token** token, char* currentchar, Token* identificador){
 		idcounter = 0;
 		stringsrow = 0;
 		//Se o tipo comecar com f, eh funcao
-		if(check->tipo[0] == 'f'){
-			Gera("    ","STR     ","0   ","    ");
+		if(check->tipo[0] == 'f' && check->escopo == 'L'){
+             
+            if(DuplicfuncSearch(check->nome,topo)){
+			    Gera("    ","STR     ","0   ","    ");
+            }
 		}
 		//Eh variavel
 		else{
