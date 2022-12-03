@@ -33,7 +33,7 @@ static void enter_text (GtkEntry* , gpointer );
 static void click_open (GtkButton* , gpointer );
 
 void update_tb2 (){
-    int j = TAMANHO_DE_MEMORIA;
+    int j = TAMANHO_DE_MEMORIA-1;
     gtk_text_buffer_set_text(tb2,"",-1);
     for(;j>=0;j--){
         GtkTextIter end;
@@ -675,10 +675,10 @@ static void app_open (GtkApplication* app, gpointer user_data){
     gtk_box_append (GTK_BOX (boxh3),dmy33);
     gtk_box_append (GTK_BOX (boxv2),scr3);
     gtk_box_append (GTK_BOX (boxv2),entry);
+    gtk_box_append (GTK_BOX (boxv3),tv4);
     gtk_box_append (GTK_BOX (boxv3),btnsbs);
     gtk_box_append (GTK_BOX (boxv3),btnrun);
-    gtk_box_append (GTK_BOX (boxv3),tv4);
-
+    
 
 
 
