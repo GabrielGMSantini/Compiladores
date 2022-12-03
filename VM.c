@@ -1,28 +1,67 @@
+#include <gtk/gtk.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#define TamanhoDosQuadros 600
 #define TAMANHO_DE_MEMORIA 50
 
+GFile* file;
+GtkTextBuffer* tb2;
+GtkTextBuffer* tb3;
+GtkTextBuffer* tb4;
+GtkEntryBuffer* bufent;
+GtkWidget *window;
+GtkWidget* entry;
+GtkWidget* tv1;
+GtkWidget* tv4;
+
+GtkWidget* btno;
+GtkWidget* btnsbs;
+GtkWidget* btnrun;
+
 FILE* fptr;
-
-char P[100][26];
-
 int M[TAMANHO_DE_MEMORIA];
 int s;
 int i;
+char P[100][26];
+int stepbystep = 0;
+int wait = 0;
 
-//Printa a Stack inteira
-int PrintStack(){
-	int j = TAMANHO_DE_MEMORIA;
-	for(;j>=0;j--){
-		printf("%d\n",M[j]);
+static void enter_text (GtkEntry* , gpointer );
+static void click_open (GtkButton* , gpointer );
+
+void update_tb2 (){
+    int j = TAMANHO_DE_MEMORIA;
+    gtk_text_buffer_set_text(tb2,"",-1);
+    for(;j>=0;j--){
+        GtkTextIter end;
+		char linha [50];
+        sprintf(linha,"%d\t%d\n",j+1,M[j]);
+        gtk_text_buffer_get_end_iter(GTK_TEXT_BUFFER (tb2),&end);
+        gtk_text_buffer_insert(GTK_TEXT_BUFFER (tb2),&end,linha,-1);
 	}
-	return 0;
+    return;
 }
 
+void update_tb3 (int num){
+    GtkTextIter end;
+    char text [20];
+    sprintf(text,"%d",num);
+    strcat(text,"\n");
+    g_print("oi");
+    gtk_text_buffer_get_end_iter(GTK_TEXT_BUFFER (tb3),&end);
+    gtk_text_buffer_insert(GTK_TEXT_BUFFER (tb3),&end,text,-1);
+    return;   
+}
 
+void update_tb4 (){
+    char text[30];
+    sprintf(text,"i:%d\ts:%d",i,s);
+    gtk_text_buffer_set_text(tb4,text,-1);
+    return;
+}
 int LoadFile(char* filename){
 	if ((fptr = fopen(filename, "r")) == NULL) {
     	printf("Deu ruim!!!");
@@ -44,11 +83,10 @@ int LoadFile(char* filename){
 		}
 		currentchar = fgetc(fptr);
 	}
+    fclose(fptr);
 	return r;
 }
 
-
-//Procura linha com rotulo
 int FetchLabel(int label){
 	char rotulo [5];
 	char comando [9];
@@ -113,8 +151,8 @@ int Exec(int l){
 	comando[8] = '\0';
 	//Se o comando for START
 	if(!strcmp(comando,"START   ")){
-		printf("start\n");
 		s=-1;
+        gtk_text_buffer_set_text(tb3,"",-1);
 		i++;
 	}
 	else{
@@ -123,7 +161,6 @@ int Exec(int l){
 			int m,n,k;
 			m=atoi(param1);
 			n=atoi(param2);
-			printf("alloc %d %d\n",m,n);
 			for(k=0;k<n;k++){
 				s++;
 				M[s]=M[m+k];
@@ -164,20 +201,30 @@ int Exec(int l){
 						//Se for HALT
 						if(!strcmp(comando,"HLT     ")){
 							printf("Halt\n");
+                            gtk_widget_set_sensitive(GTK_WIDGET(btno),TRUE);
 							return -1;
 						}
 						else{
 							//Se for leitura
 							if(!strcmp(comando,"RD      ")){
-								printf("read\n");
+                                
+								GtkTextIter end;
+                                char text [20]= "Digite um numero:";
+                                strcat(text,"\n");
+                                gtk_text_buffer_get_end_iter(GTK_TEXT_BUFFER (tb3),&end);
+
+                                gtk_text_buffer_insert(GTK_TEXT_BUFFER (tb3),&end,text,-1);
 								s++;
-								scanf("%d",&M[s]);
-								i++;
+								wait = 1;
+                                gtk_widget_set_sensitive(GTK_WIDGET(entry),TRUE);
+                                gtk_widget_set_sensitive(GTK_WIDGET(btnrun),FALSE);
+                                gtk_widget_set_sensitive(GTK_WIDGET(btnsbs),FALSE);
+                                update_tb2();
 							}
 							else{
 								//Se for escrita
 								if(!strcmp(comando,"PRN     ")){
-									printf("print %d\n",M[s]);
+									update_tb3(M[s]);
 									s--;
 									i++;
 								}
@@ -397,24 +444,263 @@ int Exec(int l){
 			}
 		}
 	}
-	
-	
+    if(stepbystep){
+        update_tb2();   
+    }
+    update_tb4();
 	return 0;	
 }
 
-int main(int argc, char** argv){
-	int r = LoadFile("./gera1.obj");
-	int j=0;
-	for(;j<r;j++){
-		puts(P[j]);
-	}
-	for(j=0;j<TAMANHO_DE_MEMORIA;j++){
+int run_all (){
+    int halt = 0;
+    stepbystep = 0;
+    do{
+        halt=Exec(i);
+    }while(halt == 0 && wait == 0);
+    if(halt){    
+        update_tb2();
+        GtkTextIter end;
+        char text [20]= "Fim do Programa";
+        strcat(text,"\n");
+        gtk_text_buffer_get_end_iter(GTK_TEXT_BUFFER (tb3),&end);
+        gtk_text_buffer_insert(GTK_TEXT_BUFFER (tb3),&end,text,-1);
+        i=0;
+        int j;
+        for(j=0;j<TAMANHO_DE_MEMORIA;j++){
+		    M[j]=0;
+	    }
+        gtk_widget_set_sensitive(btno,TRUE);
+    }
+    g_print("xau");
+    return halt;
+}
+
+
+
+
+static void on_response_open (GtkNativeDialog *native, int response, gpointer used_data){
+    char* contents;
+    gsize length; 
+    GtkTextBuffer* tb;
+    tb = gtk_text_view_get_buffer(GTK_TEXT_VIEW (used_data));   
+    if (response == GTK_RESPONSE_ACCEPT){
+      GtkFileChooser *chooser = GTK_FILE_CHOOSER (native);
+      file = gtk_file_chooser_get_file (chooser);
+      LoadFile (g_file_get_path(file));
+      if(g_file_load_contents (file, NULL, &contents, &length, NULL, NULL)){
+        gtk_text_buffer_set_text (tb, contents, length);
+        g_free (contents);
+      }
+    }
+    g_object_unref (native);
+    return;
+}
+
+static void click_open (GtkButton* btn, gpointer used_data){
+    GtkFileChooserNative *native;
+    GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
+    
+    native = gtk_file_chooser_native_new ("Open File",
+                                        GTK_WINDOW (window),
+                                        action,
+                                        "_Open",
+                                        "_Cancel");
+
+    g_signal_connect (native, "response", G_CALLBACK (on_response_open), used_data);
+    gtk_native_dialog_show (GTK_NATIVE_DIALOG (native));
+    return;
+}
+
+static void click_run (GtkButton* btn, gpointer used_data){
+    gtk_widget_set_sensitive(GTK_WIDGET(btno),FALSE);
+    run_all();
+    return;
+}
+
+static void click_sbs (GtkButton* btn, gpointer used_data){
+    stepbystep = 1;
+    g_print("%d\n",i);    
+    gtk_widget_set_sensitive(GTK_WIDGET(btno),FALSE);
+    Exec(i);
+   return; 
+}
+
+static void enter_text (GtkEntry* ent, gpointer used_data){
+    GtkEntryBuffer* buf;
+    buf = gtk_entry_get_buffer(GTK_ENTRY(used_data)) ;   
+    char* text = gtk_entry_buffer_get_text (GTK_ENTRY_BUFFER(buf));
+    int k = atoi(text);
+    M[s] = k;
+    gtk_entry_buffer_set_text(GTK_ENTRY_BUFFER(buf),"",-1);
+    wait = 0;
+    gtk_widget_set_sensitive(GTK_WIDGET(btnsbs),TRUE);
+    gtk_widget_set_sensitive(GTK_WIDGET(btnrun),TRUE);
+    i++;
+    if(!stepbystep){
+        //run_all();        
+    }
+    return;
+}
+
+static void app_open (GtkApplication* app, gpointer user_data){
+    GtkWidget* boxv;    
+    GtkWidget* boxv2;
+    GtkWidget* boxv3;
+    GtkWidget* boxh;
+    GtkWidget* boxh2;
+    GtkWidget* boxh3;
+    GtkWidget* dmy1;
+    GtkWidget* dmy2;
+    GtkWidget* dmy21;
+    GtkWidget* dmy22;
+    GtkWidget* dmy23;
+    GtkWidget* dmy31;
+    GtkWidget* dmy32;
+    GtkWidget* dmy33;
+    GtkWidget* tv2;
+    GtkWidget* tv3;
+    GtkWidget* scr1;
+    GtkWidget* scr2;
+    GtkWidget* scr3;
+    GtkTextBuffer* tb1; 
+    window = gtk_application_window_new (app);
+    gtk_window_set_title (GTK_WINDOW (window), "Virtual Machine");
+    gtk_window_maximize (GTK_WINDOW (window));
+    
+    boxv = gtk_box_new(GTK_ORIENTATION_VERTICAL,5); 
+
+    //Linha de cima
+    gtk_window_set_child(GTK_WINDOW (window), boxv);
+    boxh = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
+    gtk_box_append(GTK_BOX(boxv),boxh);
+    btno = gtk_button_new_with_label("Open");
+    btnsbs = gtk_button_new_with_label("Step by Step");
+    btnrun = gtk_button_new_with_label("Run");
+    dmy1 = gtk_label_new (NULL);
+    gtk_label_set_width_chars (GTK_LABEL (dmy1), 1);
+    dmy2 = gtk_label_new (NULL);
+    gtk_widget_set_hexpand(dmy2,TRUE);
+    gtk_box_append(GTK_BOX(boxh),dmy1);
+    gtk_box_append(GTK_BOX(boxh),btno);    
+    gtk_box_append(GTK_BOX(boxh),dmy2);
+
+    //Centro
+    boxh2 = gtk_box_new (GTK_ORIENTATION_HORIZONTAL,2);
+    dmy21 = gtk_label_new(NULL);
+    gtk_label_set_width_chars (GTK_LABEL (dmy21), 3);
+    dmy22 = gtk_label_new(NULL);
+    gtk_widget_set_hexpand(dmy22,TRUE);
+    dmy23 = gtk_label_new(NULL);
+    gtk_label_set_width_chars (GTK_LABEL (dmy23), 3);
+    
+    scr1 = gtk_scrolled_window_new();
+    tv1 = gtk_text_view_new();
+    tb1 = gtk_text_view_get_buffer (GTK_TEXT_VIEW(tv1));
+    gtk_text_view_set_editable (GTK_TEXT_VIEW (tv1), FALSE);    
+    gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (tv1), GTK_WRAP_WORD_CHAR);
+    gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (scr1), tv1);    
+    gtk_scrolled_window_set_min_content_width(GTK_SCROLLED_WINDOW (scr1),TamanhoDosQuadros);    
+    
+
+    gtk_text_view_set_monospace(GTK_TEXT_VIEW(tv1),TRUE);
+
+    scr2 = gtk_scrolled_window_new();
+    tv2 = gtk_text_view_new();
+    tb2 = gtk_text_view_get_buffer (GTK_TEXT_VIEW(tv2));
+    gtk_text_view_set_editable (GTK_TEXT_VIEW (tv2), FALSE);    
+    gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (tv2), GTK_WRAP_WORD_CHAR);
+    gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (scr2), tv2);   
+    gtk_scrolled_window_set_min_content_width(GTK_SCROLLED_WINDOW (scr2),TamanhoDosQuadros);    
+    gtk_text_view_set_monospace(GTK_TEXT_VIEW(tv2),TRUE);
+    gtk_text_buffer_set_text(tb2,"",-1);
+
+    gtk_widget_set_vexpand(scr1,TRUE);
+    gtk_widget_set_vexpand(scr2,TRUE);
+
+
+    gtk_box_append(GTK_BOX(boxh2),dmy21);
+    gtk_box_append(GTK_BOX(boxh2),scr1);
+    gtk_box_append(GTK_BOX(boxh2),dmy22);
+    gtk_box_append(GTK_BOX(boxh2),scr2);
+    gtk_box_append(GTK_BOX(boxh2),dmy23);
+    
+
+
+    gtk_box_append (GTK_BOX (boxv),boxh2); 
+    //Baixo
+    boxh3 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL,0);
+    boxv2 = gtk_box_new(GTK_ORIENTATION_VERTICAL,5);
+    boxv3 = gtk_box_new(GTK_ORIENTATION_VERTICAL,5);    
+    
+    dmy31 = gtk_label_new(NULL);
+    gtk_label_set_width_chars (GTK_LABEL (dmy31), 3);
+    dmy32 = gtk_label_new(NULL);
+    gtk_widget_set_hexpand(dmy32,TRUE);   
+    dmy33 = gtk_label_new(NULL);
+    gtk_label_set_width_chars (GTK_LABEL (dmy33), 3);
+
+    scr3 = gtk_scrolled_window_new();
+    tv3 = gtk_text_view_new();
+    tb3 = gtk_text_view_get_buffer (GTK_TEXT_VIEW(tv3));
+    gtk_text_view_set_editable (GTK_TEXT_VIEW (tv3), FALSE);    
+    gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (tv3), GTK_WRAP_WORD_CHAR);
+    gtk_scrolled_window_set_child (GTK_SCROLLED_WINDOW (scr3), tv3);
+    gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW (scr3),100);    
+    gtk_scrolled_window_set_min_content_width(GTK_SCROLLED_WINDOW (scr3),TamanhoDosQuadros);    
+    gtk_text_buffer_set_text(tb3,"",-1);
+
+    entry = gtk_entry_new();
+    bufent = gtk_entry_get_buffer (GTK_ENTRY (entry));
+    gtk_entry_set_activates_default(GTK_ENTRY (entry), TRUE);
+    gtk_entry_set_input_purpose(GTK_ENTRY (entry),GTK_INPUT_PURPOSE_DIGITS);
+    gtk_widget_set_sensitive(GTK_WIDGET(entry),FALSE);
+    
+
+    
+    tv4 = gtk_text_view_new();
+    tb4 = gtk_text_view_get_buffer (GTK_TEXT_VIEW(tv4));
+    gtk_text_view_set_editable (GTK_TEXT_VIEW (tv4), FALSE);    
+    gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (tv4), GTK_WRAP_WORD_CHAR);
+    gtk_text_buffer_set_text(tb4,"",-1);
+
+
+    
+    gtk_box_append (GTK_BOX (boxv),boxh3);
+    
+    
+    gtk_box_append (GTK_BOX (boxh3),dmy31);
+    gtk_box_append (GTK_BOX (boxh3),boxv2);
+    gtk_box_append (GTK_BOX (boxh3),dmy32);
+    gtk_box_append (GTK_BOX (boxh3),boxv3);
+    gtk_box_append (GTK_BOX (boxh3),dmy33);
+    gtk_box_append (GTK_BOX (boxv2),scr3);
+    gtk_box_append (GTK_BOX (boxv2),entry);
+    gtk_box_append (GTK_BOX (boxv3),btnsbs);
+    gtk_box_append (GTK_BOX (boxv3),btnrun);
+    gtk_box_append (GTK_BOX (boxv3),tv4);
+
+
+
+
+    //Signals
+    g_signal_connect (entry,"activate",G_CALLBACK (enter_text),entry);
+    g_signal_connect (btno,"clicked",G_CALLBACK(click_open),tv1);
+    g_signal_connect (btnrun,"clicked", G_CALLBACK(click_run),NULL);
+    g_signal_connect (btnsbs,"clicked", G_CALLBACK(click_sbs),NULL);
+    gtk_widget_show (window);
+ } 
+
+int main (int argc, char** argv){
+    
+    GtkApplication* app;
+    int stat;
+    int j;
+    for(j=0;j<TAMANHO_DE_MEMORIA;j++){
 		M[j]=0;
 	}
-	int t;
-	do{
-		printf("\n\ni=%d\ns=%d\n\n",i,s);
-		t=Exec(i);
-		PrintStack();
-	}while(t == 0);
+    app = gtk_application_new ("VM.c",G_APPLICATION_FLAGS_NONE);
+    g_signal_connect (app, "activate", G_CALLBACK (app_open), NULL);
+    stat = g_application_run (G_APPLICATION (app), argc, argv);
+    g_object_unref (app);
+    return stat;
 }

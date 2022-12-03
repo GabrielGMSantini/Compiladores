@@ -10,21 +10,18 @@ inicio
 leia (c);
 leia (a);
 s:= soma;
-escreva (s);
 fim;
 procedimento loop;
 var x,c: inteiro;
  y: booleano;
 inicio
 leia (x);   {para parar digite um valor maior que 9 }
-y:= x<10 e (x>5);
-se ((nao((a+(+c))<10)ou(((-a)+x)>5))e((c-x)=3))
+se x < 10
 entao ler
 fim;
 inicio  {corpo da funcao soma}
 loop;
 soma:= c + a;
-escreva (a);
 fim;
 inicio      {corpo principal}
 s:= soma;
