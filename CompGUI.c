@@ -5,7 +5,7 @@
 #include <gtk/gtk.h>
 #include <string.h>
 
-char ofilename[50];
+char ofilename[100];
 GtkTextBuffer* tb;
 GtkWidget* win;
 GFile* file;
@@ -58,7 +58,7 @@ static void click_compile (GtkButton* btn, gpointer used_data){
         gtk_text_buffer_set_text (used_data, "Arquivo de programa nao salvo", -1);        
     }
     else{
-    char cfilename[50];
+    char cfilename[100];
     strcpy(cfilename,ofilename);
     int len = strlen(cfilename);
     cfilename[len-4] = '\0';

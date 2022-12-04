@@ -317,6 +317,7 @@ Token* lexical(char* currentchar){
 //---------------------------Sintatico----------------------------
 int BlockAnalyzer(Token**, char*);
 int CommandAnalyzer(Token** , char* );
+int AnalyzeSimpleCommand(Token** , char* );
 //Analisa o tipo da variavel
 int TypeAnalyzer(Token** token, char* currentchar){
 	//Se nao for booleano ou inteiro
@@ -1091,42 +1092,49 @@ int Analyzewrite(Token** token, char* currentchar){
 	else{
 		ThrowError(25,currentrow,(*token)->lexema);
 	}
+    return 0;
 }
 
 //Analisa comando simples
 int AnalyzeSimpleCommand(Token** token, char* currentchar){
 	//Se for um identificador
-	
 	if(!strcmp((*token)->simbolo,"sidentificador")){
 		AnalyzeAttChProcedure(token,currentchar);
+        return 0;
 	}
 	//Se nao for identificador
 	else{
 		//Se for um "se"
 		if(!strcmp((*token)->simbolo,"sse")){
 			Analyzeif(token,currentchar);
+            return 0;
 		}
 		//Se nao for "se"
 		else{
 			//Se for enquanto
 			if(!strcmp((*token)->simbolo,"senquanto")){
 				Analyzewhile(token,currentchar);
+                return 0;
 			}
 			//Se nao for enquanto
 			else{
 				//Se for leia
 				if(!strcmp((*token)->simbolo,"sleia")){
 					Analyzeread(token,currentchar);
+                    return 0;
 				}
 				//Se nao for leia
 				else{
 					//Se for escreva
 					if(!strcmp((*token)->simbolo,"sescreva")){
+                        
 						Analyzewrite(token,currentchar);
+                        return 0;
 					}
 					//Se nao for escreva
 					else{
 						CommandAnalyzer(token,currentchar);
+                        return 0;
 					}
 				}
 			}
@@ -1280,13 +1288,22 @@ int posfix(){
 				ids++;
 			}
 			else{
-				identifier* auxid;
-				auxid = Consultstack(strings[strcounter],topo);
-				idlist[ids].escopo = auxid->escopo;
-				idlist[ids].memoria = auxid->memoria;
-				strcpy(idlist[ids].nome,strings[strcounter]);
-				strcpy(idlist[ids].tipo,auxid->tipo);
-				ids++;
+                if(!strcmp(strings[strcounter],"verdadeiro") || !strcmp(strings[strcounter],"falso")){
+                    idlist[ids].escopo = 0;
+                    idlist[ids].memoria = 0;
+				    strcpy(idlist[ids].nome,strings[strcounter]);
+				    strcpy(idlist[ids].tipo,"sbooleano");
+                    ids++;
+                }
+                else{
+				    identifier* auxid;
+				    auxid = Consultstack(strings[strcounter],topo);
+				    idlist[ids].escopo = auxid->escopo;
+				    idlist[ids].memoria = auxid->memoria;
+				    strcpy(idlist[ids].nome,strings[strcounter]);
+				    strcpy(idlist[ids].tipo,auxid->tipo);
+				    ids++;
+                }
 			}
 		}
 		else{
@@ -1562,9 +1579,9 @@ int ExpressionTypeAnalyzer(){
 	stacknode* aux = NULL;
 	for(i=0;i<idcounter;i++){
 		//Se for numero, variavel ou funcao, coloca na pilha
-		if(!strcmp(idlist[i].tipo,"snumero") || !strcmp(idlist[i].tipo,"inteiro") || !strcmp(idlist[i].tipo,"booleano") || !strcmp(idlist[i].tipo,"funcao inteiro") || !strcmp(idlist[i].tipo,"funcao booleano")){
+		if(!strcmp(idlist[i].tipo,"snumero") || !strcmp(idlist[i].tipo,"sbooleano") || !strcmp(idlist[i].tipo,"inteiro") || !strcmp(idlist[i].tipo,"booleano") || !strcmp(idlist[i].tipo,"funcao inteiro") || !strcmp(idlist[i].tipo,"funcao booleano")){
 			Push(&aux,idlist[i].nome,idlist[i].escopo,idlist[i].tipo,idlist[i].memoria);
-			if(strcmp(idlist[i].tipo,"snumero")){
+			if(strcmp(idlist[i].tipo,"snumero") && strcmp(idlist[i].tipo,"sbooleano")){
 				if(idlist[i].tipo[0] != 'f'){
 					char aux[5] = "    \0";
 					sprintf(aux,"%d",idlist[i].memoria);
@@ -1590,17 +1607,27 @@ int ExpressionTypeAnalyzer(){
 				}
 			}
 			else{
-				char aux[5] = "    \0";
-				int j;
-				strcpy(aux,idlist[i].nome);
-				for(j=0;j<5;j++){
-					if(!isdigit(aux[j])){
-						aux[j] = ' ';
-					}
-				}
-				aux[4] = '\0';
-				puts(aux);
-				Gera("    ","LDC     ",aux,"    ");
+                if(!strcmp(idlist[i].tipo,"sbooleano")){
+                    if(!strcmp(idlist[i].nome,"verdadeiro")){
+                        Gera("    ","LDC     ","1   ","    ");
+                    }
+                    else{
+                        Gera("    ","LDC     ","0   ","    ");
+                    }
+                }
+                else{
+				    char aux[5] = "    \0";
+				    int j;
+				    strcpy(aux,idlist[i].nome);
+				    for(j=0;j<5;j++){
+					    if(!isdigit(aux[j])){
+						    aux[j] = ' ';
+					    }
+				    }
+				    aux[4] = '\0';
+				    puts(aux);
+				    Gera("    ","LDC     ",aux,"    ");
+                }
 			}
 		}
 		else{
@@ -1733,7 +1760,7 @@ int ExpressionTypeAnalyzer(){
 							if(aux != NULL){
 								identifier* auxid;
 								auxid = Pop(&aux);
-								if(!strcmp(auxid->tipo,"booleano") || !strcmp(auxid->tipo,"funcao booleano")){
+								if(!strcmp(auxid->tipo,"booleano") || !strcmp(auxid->tipo,"funcao booleano") || !strcmp(auxid->tipo,"sbooleano")){
 									Push(&aux,auxid->nome,auxid->escopo,auxid->tipo,auxid->memoria);
 								}	
 								else{
@@ -1756,9 +1783,9 @@ int ExpressionTypeAnalyzer(){
 								identifier* auxid;
 								auxid = Pop(&aux);
 								if(aux != NULL){
-									if(!strcmp(auxid->tipo,"booleano") || !strcmp(auxid->tipo,"funcao booleano")){
+									if(!strcmp(auxid->tipo,"booleano") || !strcmp(auxid->tipo,"funcao booleano" )|| !strcmp(auxid->tipo,"sbooleano")){
 										auxid = Pop(&aux);
-										if(!strcmp(auxid->tipo,"booleano") || !strcmp(auxid->tipo,"funcao booleano")){
+										if(!strcmp(auxid->tipo,"booleano") || !strcmp(auxid->tipo,"funcao booleano")|| !strcmp(auxid->tipo,"sbooleano")){
 											Push(&aux,"op",0,"booleano",0);
 										}
 										else{
