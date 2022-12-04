@@ -489,6 +489,16 @@ static void on_response_open (GtkNativeDialog *native, int response, gpointer us
       LoadFile (g_file_get_path(file));
       if(g_file_load_contents (file, NULL, &contents, &length, NULL, NULL)){
         gtk_text_buffer_set_text (tb, contents, length);
+        int lines = gtk_text_buffer_get_line_count (tb);
+        g_print("%d\n",lines);
+        int row;        
+        for(row = 0; row<lines;row++ ){
+            GtkTextIter startline;
+            gtk_text_buffer_get_iter_at_line(GTK_TEXT_BUFFER(tb),&startline,row);
+            char numero [6];
+            sprintf(numero,"%d\t",row+1);
+            gtk_text_buffer_insert(GTK_TEXT_BUFFER (tb),&startline,numero,-1);
+        }
         g_free (contents);
       }
     }
