@@ -903,8 +903,10 @@ int Analyzeif(Token** token, char* currentchar){
 	if(!strcmp((*token)->simbolo,"sentao")){
 		(*token) = lexical(currentchar);
 		AnalyzeSimpleCommand(token,currentchar);
+        PrintToken((*token));
 		//Se for senao
 		if(!strcmp((*token)->simbolo,"ssenao")){
+            printf("senao\n");
 			flag = 1;
 			sprintf(aux2,"%d",rotulo);
 			for(i=0;i<5;i++){
