@@ -38,6 +38,7 @@
 
 # Debug files
 *.dSYM/
+teste.c
 *.su
 *.idb
 *.pdb
