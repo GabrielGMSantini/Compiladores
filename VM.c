@@ -490,7 +490,6 @@ static void on_response_open (GtkNativeDialog *native, int response, gpointer us
       if(g_file_load_contents (file, NULL, &contents, &length, NULL, NULL)){
         gtk_text_buffer_set_text (tb, contents, length);
         int lines = gtk_text_buffer_get_line_count (tb);
-        g_print("%d\n",lines);
         int row;        
         for(row = 0; row<lines;row++ ){
             GtkTextIter startline;
